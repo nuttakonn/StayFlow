@@ -5,6 +5,7 @@ using StayFlow.BuildingBlocks.Common;
 using StayFlow.BuildingBlocks.Domain.Audit;
 using StayFlow.BuildingBlocks.Domain.ChannelManager;
 using StayFlow.BuildingBlocks.Domain.Apartments;
+using StayFlow.BuildingBlocks.Domain.Rates;
 using StayFlow.BuildingBlocks.Domain.Billing;
 using StayFlow.BuildingBlocks.Domain.Maintenance;
 using StayFlow.BuildingBlocks.Domain.Branding;
@@ -70,6 +71,13 @@ public class StayFlowDbContext : DbContext
     public DbSet<ChannelConnection> ChannelConnections => Set<ChannelConnection>();
     public DbSet<ChannelRateMapping> ChannelRateMappings => Set<ChannelRateMapping>();
     public DbSet<ChannelReservation> ChannelReservations => Set<ChannelReservation>();
+
+    // M10: Rate Plans, Coupons, Group Bookings
+    public DbSet<RatePlan> RatePlans => Set<RatePlan>();
+    public DbSet<RateRule> RateRules => Set<RateRule>();
+    public DbSet<RatePlanRestriction> RatePlanRestrictions => Set<RatePlanRestriction>();
+    public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<GroupBooking> GroupBookings => Set<GroupBooking>();
 
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<PlanEntitlement> PlanEntitlements => Set<PlanEntitlement>();
@@ -267,6 +275,8 @@ public class StayFlowDbContext : DbContext
             b.Property(r => r.SpecialRequests).HasMaxLength(1000);
             b.Property(r => r.Notes).HasMaxLength(1000);
             b.Property(r => r.CancellationReason).HasMaxLength(500);
+            b.Property(r => r.CouponCode).HasMaxLength(100);
+            b.Property(r => r.DiscountAmount).HasPrecision(18, 4);
             // Optimistic concurrency token
             b.Property(r => r.RowVersion).IsConcurrencyToken();
             b.HasIndex(r => r.OrganizationId);
@@ -276,6 +286,7 @@ public class StayFlowDbContext : DbContext
             b.HasIndex(r => r.Status);
             b.HasIndex(r => r.CheckInDate);
             b.HasIndex(r => r.CheckOutDate);
+            b.HasIndex(r => r.GroupBookingId);
             b.HasQueryFilter(r => !_tenantContext!.OrganizationId.HasValue || r.OrganizationId == _tenantContext.OrganizationId.Value);
         });
 
@@ -604,6 +615,71 @@ public class StayFlowDbContext : DbContext
             b.HasIndex(x => x.ChannelConnectionId);
             b.HasIndex(x => new { x.ChannelConnectionId, x.ChannelBookingReference }).IsUnique();
             b.HasIndex(x => x.ProcessingStatus);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        // ── M10: Rate Plans ───────────────────────────────────────────────────
+
+        modelBuilder.Entity<RatePlan>(b =>
+        {
+            b.ToTable("rate_plans");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            b.Property(x => x.Code).HasMaxLength(50).IsRequired();
+            b.Property(x => x.BaseRate).HasPrecision(18, 4).IsRequired();
+            b.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            b.HasIndex(x => new { x.PropertyId, x.Code }).IsUnique();
+            b.HasIndex(x => x.OrganizationId);
+            b.HasMany(x => x.Rules).WithOne().HasForeignKey(r => r.RatePlanId);
+            b.HasOne(x => x.Restriction).WithOne().HasForeignKey<RatePlanRestriction>(r => r.RatePlanId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        modelBuilder.Entity<RateRule>(b =>
+        {
+            b.ToTable("rate_rules");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.RateMultiplier).HasPrecision(8, 4);
+            b.Property(x => x.FlatAdjustment).HasPrecision(18, 4);
+        });
+
+        modelBuilder.Entity<RatePlanRestriction>(b =>
+        {
+            b.ToTable("rate_plan_restrictions");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => x.RatePlanId).IsUnique();
+            b.Property(x => x.BlackoutDatesJson).HasMaxLength(2000);
+        });
+
+        // ── M10: Coupons ──────────────────────────────────────────────────────
+
+        modelBuilder.Entity<Coupon>(b =>
+        {
+            b.ToTable("coupons");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Code).HasMaxLength(100).IsRequired();
+            b.Property(x => x.Value).HasPrecision(18, 4).IsRequired();
+            b.Property(x => x.EligibleRoomTypeIdsJson).HasMaxLength(2000);
+            b.HasIndex(x => new { x.PropertyId, x.Code }).IsUnique();
+            b.HasIndex(x => x.OrganizationId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        // ── M10: Group Bookings ───────────────────────────────────────────────
+
+        modelBuilder.Entity<GroupBooking>(b =>
+        {
+            b.ToTable("group_bookings");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.CoordinatorName).HasMaxLength(200).IsRequired();
+            b.Property(x => x.CoordinatorEmail).HasMaxLength(255);
+            b.Property(x => x.CoordinatorPhone).HasMaxLength(50);
+            b.Property(x => x.CompanyName).HasMaxLength(200);
+            b.Property(x => x.AgreedRateNotes).HasMaxLength(500);
+            b.Property(x => x.Notes).HasMaxLength(1000);
+            b.Property(x => x.CancellationReason).HasMaxLength(500);
+            b.HasIndex(x => x.OrganizationId);
+            b.HasIndex(x => x.PropertyId);
             b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
         });
     }

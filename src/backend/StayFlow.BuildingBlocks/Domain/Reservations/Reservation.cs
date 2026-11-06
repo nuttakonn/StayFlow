@@ -43,6 +43,12 @@ public class Reservation : PropertyEntity<Guid>
     public ReservationStatus Status { get; private set; } = ReservationStatus.Pending;
     public ReservationSource Source { get; private set; } = ReservationSource.Phone;
 
+    // Rate plan and coupon locked at booking time — never recalculate silently
+    public Guid? RatePlanId { get; private set; }
+    public Guid? GroupBookingId { get; private set; }
+    public string? CouponCode { get; private set; }
+    public decimal DiscountAmount { get; private set; } = 0m;
+
     public string? SpecialRequests { get; private set; }
     public string? Notes { get; private set; }
     public string? CancellationReason { get; private set; }
@@ -73,7 +79,11 @@ public class Reservation : PropertyEntity<Guid>
         string currency = "THB",
         ReservationSource source = ReservationSource.Phone,
         string? specialRequests = null,
-        string? notes = null)
+        string? notes = null,
+        Guid? ratePlanId = null,
+        Guid? groupBookingId = null,
+        string? couponCode = null,
+        decimal discountAmount = 0m)
     {
         if (checkOutDate <= checkInDate)
             throw new ArgumentException("Check-out date must be after check-in date.");
@@ -100,6 +110,10 @@ public class Reservation : PropertyEntity<Guid>
             Source = source,
             SpecialRequests = specialRequests?.Trim(),
             Notes = notes?.Trim(),
+            RatePlanId = ratePlanId,
+            GroupBookingId = groupBookingId,
+            CouponCode = couponCode?.Trim().ToUpperInvariant(),
+            DiscountAmount = discountAmount,
             RowVersion = Guid.NewGuid(),
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
@@ -312,6 +326,13 @@ public class Reservation : PropertyEntity<Guid>
         RoomTypeId = roomTypeId;
         SpecialRequests = specialRequests?.Trim();
         Notes = notes?.Trim();
+        RowVersion = Guid.NewGuid();
+        Touch();
+    }
+
+    public void SetGroupBooking(Guid groupBookingId)
+    {
+        GroupBookingId = groupBookingId;
         RowVersion = Guid.NewGuid();
         Touch();
     }

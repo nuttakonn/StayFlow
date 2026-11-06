@@ -1395,6 +1395,258 @@ namespace StayFlow.Api.Migrations
                     b.ToTable("properties", (string)null);
                 });
 
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Rates.Coupon", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DiscountType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EligibleRoomTypeIdsJson")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("MaxUses")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidTo")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("PropertyId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("coupons", (string)null);
+                });
+
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Rates.GroupBooking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AgreedRateNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset?>("CancelledAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CompanyName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CoordinatorEmail")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("CoordinatorName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CoordinatorPhone")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("PropertyId");
+
+                    b.ToTable("group_bookings", (string)null);
+                });
+
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Rates.RatePlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BaseRate")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("RateType")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("RoomTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("PropertyId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("rate_plans", (string)null);
+                });
+
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Rates.RatePlanRestriction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BlackoutDatesJson")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("MaxAdvanceDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("MinNights")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RatePlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RatePlanId")
+                        .IsUnique();
+
+                    b.ToTable("rate_plan_restrictions", (string)null);
+                });
+
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Rates.RateRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DayType")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("FlatAdjustment")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("RateMultiplier")
+                        .HasPrecision(8, 4)
+                        .HasColumnType("numeric(8,4)");
+
+                    b.Property<Guid>("RatePlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("SeasonEndDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("SeasonStartDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RatePlanId");
+
+                    b.ToTable("rate_rules", (string)null);
+                });
+
             modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Reservations.Reservation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1426,6 +1678,10 @@ namespace StayFlow.Api.Migrations
                     b.Property<int>("Children")
                         .HasColumnType("integer");
 
+                    b.Property<string>("CouponCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -1433,6 +1689,13 @@ namespace StayFlow.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<Guid?>("GroupBookingId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("GuestId")
                         .HasColumnType("uuid");
@@ -1450,6 +1713,9 @@ namespace StayFlow.Api.Migrations
                     b.Property<decimal>("QuotedRate")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid?>("RatePlanId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("RoomId")
                         .HasColumnType("uuid");
@@ -1483,6 +1749,8 @@ namespace StayFlow.Api.Migrations
                     b.HasIndex("CheckInDate");
 
                     b.HasIndex("CheckOutDate");
+
+                    b.HasIndex("GroupBookingId");
 
                     b.HasIndex("GuestId");
 
@@ -1896,6 +2164,24 @@ namespace StayFlow.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Rates.RatePlanRestriction", b =>
+                {
+                    b.HasOne("StayFlow.BuildingBlocks.Domain.Rates.RatePlan", null)
+                        .WithOne("Restriction")
+                        .HasForeignKey("StayFlow.BuildingBlocks.Domain.Rates.RatePlanRestriction", "RatePlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Rates.RateRule", b =>
+                {
+                    b.HasOne("StayFlow.BuildingBlocks.Domain.Rates.RatePlan", null)
+                        .WithMany("Rules")
+                        .HasForeignKey("RatePlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Reservations.ReservationStatusHistory", b =>
                 {
                     b.HasOne("StayFlow.BuildingBlocks.Domain.Reservations.Reservation", null)
@@ -1945,6 +2231,13 @@ namespace StayFlow.Api.Migrations
             modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Inventory.Room", b =>
                 {
                     b.Navigation("StatusHistories");
+                });
+
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Rates.RatePlan", b =>
+                {
+                    b.Navigation("Restriction");
+
+                    b.Navigation("Rules");
                 });
 
             modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Reservations.Reservation", b =>

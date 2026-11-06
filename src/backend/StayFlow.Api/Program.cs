@@ -422,6 +422,11 @@ app.MapApartmentEndpoints();
 // M9: Channel Manager (STAAH / SiteMinder)
 app.MapChannelManagerEndpoints();
 
+// M10: Rate Plans, Coupons, Group Bookings
+app.MapRatePlanEndpoints();
+app.MapCouponEndpoints();
+app.MapGroupBookingEndpoints();
+
 app.Run();
 
 // Make Program accessible for WebApplicationFactory in integration tests

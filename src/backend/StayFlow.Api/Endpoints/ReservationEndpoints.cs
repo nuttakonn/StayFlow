@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StayFlow.BuildingBlocks.ChannelManager;
 using StayFlow.BuildingBlocks.Domain.Inventory;
+using StayFlow.BuildingBlocks.Domain.Rates;
 using StayFlow.BuildingBlocks.Domain.Reservations;
 using StayFlow.BuildingBlocks.MultiTenancy;
 using StayFlow.BuildingBlocks.Persistence;
@@ -24,7 +25,9 @@ public record CreateReservationRequest(
     string Currency,
     string Source,        // WalkIn | Phone | Email | Online | OTA | Other
     string? SpecialRequests,
-    string? Notes
+    string? Notes,
+    Guid? RatePlanId = null,
+    string? CouponCode = null
 );
 
 public record UpdateReservationRequest(
@@ -80,7 +83,11 @@ public record ReservationDto(
     DateTimeOffset? CheckedOutAtUtc,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? UpdatedAtUtc,
-    IReadOnlyCollection<ReservationStatusHistoryDto> Timeline
+    IReadOnlyCollection<ReservationStatusHistoryDto> Timeline,
+    Guid? RatePlanId = null,
+    Guid? GroupBookingId = null,
+    string? CouponCode = null,
+    decimal DiscountAmount = 0m
 );
 
 public record AvailabilityRoomTypeDto(
@@ -305,6 +312,26 @@ public static class ReservationEndpoints
                             statusCode: StatusCodes.Status409Conflict);
                 }
 
+                // Resolve coupon and lock discount at booking time
+                decimal discountAmount = 0m;
+                string? lockedCouponCode = null;
+                if (!string.IsNullOrWhiteSpace(request.CouponCode))
+                {
+                    var coupon = await dbContext.Coupons
+                        .FirstOrDefaultAsync(c =>
+                            c.PropertyId == request.PropertyId &&
+                            c.Code == request.CouponCode.Trim().ToUpperInvariant() &&
+                            c.IsActive, ct);
+                    if (coupon != null && coupon.IsValid(DateOnly.FromDateTime(DateTime.UtcNow)))
+                    {
+                        discountAmount = coupon.CalculateDiscount(request.TotalAmount);
+                        lockedCouponCode = coupon.Code;
+                        coupon.IncrementUsage();
+                    }
+                }
+
+                var finalTotal = request.TotalAmount - discountAmount;
+
                 var reservation = Reservation.Create(
                     organizationId: tenantContext.OrganizationId.Value,
                     propertyId: request.PropertyId,
@@ -316,11 +343,14 @@ public static class ReservationEndpoints
                     roomTypeId: request.RoomTypeId,
                     roomId: request.RoomId,
                     quotedRate: request.QuotedRate,
-                    totalAmount: request.TotalAmount,
+                    totalAmount: finalTotal,
                     currency: request.Currency,
                     source: source,
                     specialRequests: request.SpecialRequests,
-                    notes: request.Notes);
+                    notes: request.Notes,
+                    ratePlanId: request.RatePlanId,
+                    couponCode: lockedCouponCode,
+                    discountAmount: discountAmount);
 
                 foreach (var history in reservation.StatusHistories)
                     dbContext.ReservationStatusHistories.Add(history);
@@ -798,5 +828,9 @@ public static class ReservationEndpoints
                 h.FromStatus?.ToString(),
                 h.ToStatus.ToString(),
                 h.Note,
-                h.CreatedAtUtc)).ToList());
+                h.CreatedAtUtc)).ToList(),
+            r.RatePlanId,
+            r.GroupBookingId,
+            r.CouponCode,
+            r.DiscountAmount);
 }
