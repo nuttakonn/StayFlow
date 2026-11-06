@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Plus Jakarta Sans', Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* transitions.dev semantic motion tokens */
+  --t-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-dur-fast: 150ms;
+  --t-dur-base: 250ms;
+  --t-dur-slow: 350ms;
+
+  --modal-open-dur: 260ms;
+  --modal-close-dur: 160ms;
+  --modal-scale: 0.94;
+  --modal-scale-close: 0.96;
+  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --card-scale-hover: 1.015;
+  --card-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* transitions.dev utilities */
+.t-card {
+  transition: transform var(--t-dur-base) var(--card-ease), box-shadow var(--t-dur-base) var(--card-ease), border-color var(--t-dur-fast) ease;
+}
+.t-card:hover {
+  transform: translateY(-2px) scale(var(--card-scale-hover));
+}
+
+.t-button {
+  transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms ease, box-shadow 150ms ease;
+}
+.t-button:active {
+  transform: scale(0.96);
+}
+
+.t-pill {
+  transition: all var(--t-dur-fast) var(--t-ease);
+}
+
+.t-modal-overlay {
+  transition: opacity var(--modal-open-dur) var(--modal-ease);
+}
+
+.t-modal-content {
+  transition: transform var(--modal-open-dur) var(--modal-ease), opacity var(--modal-open-dur) var(--modal-ease);
+}
+
+.t-badge-pop {
+  animation: badgePop 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

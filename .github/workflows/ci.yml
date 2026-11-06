@@ -1,0 +1,77 @@
+name: StayFlow CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  backend-build-test:
+    name: Backend Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: stayflow_db
+          POSTGRES_USER: stayflow_app
+          POSTGRES_PASSWORD: stayflow_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore StayFlow.sln
+
+      - name: Build solution
+        run: dotnet build StayFlow.sln --no-restore --configuration Release
+
+      - name: Run Unit Tests
+        run: dotnet test tests/backend/UnitTests/StayFlow.UnitTests/StayFlow.UnitTests.csproj --no-build --configuration Release --verbosity normal
+
+      - name: Run Integration Tests
+        run: dotnet test tests/backend/IntegrationTests/StayFlow.IntegrationTests/StayFlow.IntegrationTests.csproj --no-build --configuration Release --verbosity normal
+        env:
+          ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=stayflow_db;Username=stayflow_app;Password=stayflow_test_password;
+
+  frontend-build-test:
+    name: Frontend Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'src/frontend/stayflow-web/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: src/frontend/stayflow-web
+        run: npm ci
+
+      - name: Type check & Lint
+        working-directory: src/frontend/stayflow-web
+        run: npm run lint || true
+
+      - name: Build frontend
+        working-directory: src/frontend/stayflow-web
+        run: npm run build

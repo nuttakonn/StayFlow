@@ -1,0 +1,40 @@
+# StayFlow PMS — Production Caddyfile
+# Used by docker-compose.production.yml
+# DOMAIN and ACME_EMAIL are injected as environment variables by Caddy
+
+{env.DOMAIN} {
+    tls {env.ACME_EMAIL}
+
+    # API — forward to Kestrel
+    handle /api/* {
+        reverse_proxy api:5000
+    }
+
+    handle /healthz {
+        reverse_proxy api:5000
+    }
+
+    # React SPA — static files with HTML5 history fallback
+    handle {
+        root * /srv/frontend
+        try_files {path} /index.html
+        file_server
+    }
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Frame-Options DENY
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        -Server
+        defer
+    }
+
+    encode gzip zstd
+
+    log {
+        output stdout
+    }
+}

@@ -1,0 +1,3498 @@
+{
+  "info": {
+    "_postman_id": "stayflow-pms-collection-v1",
+    "name": "StayFlow PMS API Collection",
+    "description": "Comprehensive Postman collection for StayFlow PMS (Hotels & Apartments). Supports JWT Bearer authentication, tenant context switching, organization management, property setup, room inventory, operational statuses, 3-tier branding, and audit logs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "healthz"
+              ]
+            }
+          }
+        },
+        {
+          "name": "API Metadata & Docs Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "OpenAPI Specification (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/openapi/v1.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "openapi",
+                "v1.json"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Authentication",
+      "item": [
+        {
+          "name": "Register User & Organization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var data = pm.response.json();",
+                  "    pm.environment.set(\"authToken\", data.accessToken);",
+                  "    pm.environment.set(\"refreshToken\", data.refreshToken);",
+                  "    if (data.activeOrganizationId) {",
+                  "        pm.environment.set(\"organizationId\", data.activeOrganizationId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@grandsiam.com\",\n  \"password\": \"SecurePass123!\",\n  \"fullName\": \"Somchai Srisawat\",\n  \"phoneNumber\": \"+66812345678\",\n  \"organizationName\": \"Grand Siam Hospitality Group\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var data = pm.response.json();",
+                  "    pm.environment.set(\"authToken\", data.accessToken);",
+                  "    pm.environment.set(\"refreshToken\", data.refreshToken);",
+                  "    if (data.activeOrganizationId) {",
+                  "        pm.environment.set(\"organizationId\", data.activeOrganizationId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@grandsiam.com\",\n  \"password\": \"SecurePass123!\",\n  \"organizationId\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var data = pm.response.json();",
+                  "    pm.environment.set(\"authToken\", data.accessToken);",
+                  "    pm.environment.set(\"refreshToken\", data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Current User Profile (/me)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Organizations",
+      "item": [
+        {
+          "name": "List User's Organizations",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "organizations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Organization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    pm.environment.set(\"organizationId\", data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Andaman Island Properties\",\n  \"slug\": \"andaman-islands\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "organizations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Organization Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations/{{organizationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "organizations",
+                "{{organizationId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Member to Organization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@grandsiam.com\",\n  \"fullName\": \"Kanya Manager\",\n  \"role\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "organizations",
+                "{{organizationId}}",
+                "members"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Properties",
+      "item": [
+        {
+          "name": "List Properties in Active Organization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Hotel Property",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    pm.environment.set(\"propertyId\", data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Grand Siam Palace Hotel\",\n  \"code\": \"GSP-01\",\n  \"businessType\": 1,\n  \"ianaTimeZone\": \"Asia/Bangkok\",\n  \"defaultCurrency\": \"THB\",\n  \"address\": \"123 Sukhumvit 21, Asoke, Bangkok 10110\",\n  \"contactPhone\": \"+6620001111\",\n  \"contactEmail\": \"palace@grandsiam.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Property By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Inventory & Rooms",
+      "item": [
+        {
+          "name": "List Buildings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/buildings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "buildings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Building",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Main Palace Wing\",\n  \"code\": \"MPW\",\n  \"numberOfFloors\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/buildings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "buildings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Room Types",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/room-types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "room-types"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Room Type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    pm.environment.set(\"roomTypeId\", data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Deluxe King Room\",\n  \"code\": \"DLX-K\",\n  \"baseRate\": 1800.00,\n  \"standardOccupancy\": 2,\n  \"maxOccupancy\": 3,\n  \"maxAdults\": 2,\n  \"maxChildren\": 1,\n  \"description\": \"Spacious deluxe king room with city view and bathtub.\",\n  \"amenitiesJson\": \"[\\\"WiFi\\\", \\\"Bathtub\\\", \\\"SmartTV\\\", \\\"Balcony\\\"]\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/room-types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "room-types"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Rooms with Filter",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/rooms?status=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "rooms"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "1: Clean, 2: Dirty, 3: Cleaning, 4: Inspected, 5: OutOfService, 6: Maintenance"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room Operational Status Summary",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/rooms/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "rooms",
+                "summary"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Room",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    pm.environment.set(\"roomId\", data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomTypeId\": \"{{roomTypeId}}\",\n  \"roomNumber\": \"101\",\n  \"buildingId\": null,\n  \"floorId\": null,\n  \"displayName\": \"Deluxe King 101\",\n  \"capacity\": 2,\n  \"operationalStatus\": 1,\n  \"notes\": \"Poolside room\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/rooms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "rooms"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Room Operational Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newStatus\": 2,\n  \"notes\": \"Guest checked out; room needs full turnover\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rooms/{{roomId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms",
+                "{{roomId}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room Status History",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rooms/{{roomId}}/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms",
+                "{{roomId}}",
+                "history"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Branding",
+      "item": [
+        {
+          "name": "Get Effective Branding",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/branding?organizationId={{organizationId}}&propertyId={{propertyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "branding"
+              ],
+              "query": [
+                {
+                  "key": "organizationId",
+                  "value": "{{organizationId}}"
+                },
+                {
+                  "key": "propertyId",
+                  "value": "{{propertyId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Organization Branding",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": null,\n  \"displayName\": \"Grand Siam Hospitality Group\",\n  \"logoUrl\": \"https://cdn.grandsiam.com/logo.png\",\n  \"faviconUrl\": \"https://cdn.grandsiam.com/favicon.ico\",\n  \"primaryColor\": \"#1E3A8A\",\n  \"secondaryColor\": \"#0284C7\",\n  \"loginTitle\": \"Grand Siam PMS Portal\",\n  \"loginWelcomeText\": \"Enterprise Property Management\",\n  \"footerText\": \"Grand Siam Hospitality Group\",\n  \"supportEmail\": \"support@grandsiam.com\",\n  \"supportPhone\": \"+6620003333\",\n  \"showVendorAttribution\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/branding",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "branding"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Audit Trail",
+      "item": [
+        {
+          "name": "Get Organization Audit Events",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/audit?limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Guests & Profiles",
+      "item": [
+        {
+          "name": "Search & List Guests",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests?search=&page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Guest Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('guestId', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"คุณสมชาย ใจดี\",\n  \"email\": \"somchai.demo@example.com\",\n  \"phone\": \"+66812345678\",\n  \"nationalId\": \"1234567890123\",\n  \"passportNumber\": \"AA1234567\",\n  \"nationality\": \"Thai\",\n  \"notes\": \"VIP Guest, ขอห้องเงียบ\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Guest by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests/{{guestId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests",
+                "{{guestId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Guest Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"คุณสมชาย ใจดี (VIP Platinum)\",\n  \"email\": \"somchai.demo@example.com\",\n  \"phone\": \"+66812345678\",\n  \"nationalId\": \"1234567890123\",\n  \"passportNumber\": \"AA1234567\",\n  \"nationality\": \"Thai\",\n  \"notes\": \"อัพเกรดเป็นระดับ Platinum\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests/{{guestId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests",
+                "{{guestId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Availability & Calendar",
+      "item": [
+        {
+          "name": "Check Room Availability (Date Range)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/availability?checkInDate=2026-11-05&checkOutDate=2026-11-08",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "availability"
+              ],
+              "query": [
+                {
+                  "key": "checkInDate",
+                  "value": "2026-11-05"
+                },
+                {
+                  "key": "checkOutDate",
+                  "value": "2026-11-08"
+                },
+                {
+                  "key": "roomTypeId",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Reservations Lifecycle",
+      "item": [
+        {
+          "name": "List Reservations",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations?propertyId={{propertyId}}&page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations"
+              ],
+              "query": [
+                {
+                  "key": "propertyId",
+                  "value": "{{propertyId}}"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "checkInDate",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Reservation (Pending)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('reservationId', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"guestId\": \"{{guestId}}\",\n  \"checkInDate\": \"2026-11-05\",\n  \"checkOutDate\": \"2026-11-08\",\n  \"adults\": 2,\n  \"children\": 0,\n  \"roomTypeId\": \"{{roomTypeId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"quotedRate\": 2000.0,\n  \"totalAmount\": 6000.0,\n  \"currency\": \"THB\",\n  \"source\": \"Phone\",\n  \"specialRequests\": \"ต้องการเตียงคิงไซส์ และเช็คอินช่วงบ่าย 2\",\n  \"notes\": \"จองผ่านโทรศัพท์โดยตรง\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Reservation Detail by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/{{reservationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations",
+                "{{reservationId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm Reservation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/{{reservationId}}/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations",
+                "{{reservationId}}",
+                "confirm"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign Room to Reservation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": \"{{roomId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/{{reservationId}}/assign-room",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations",
+                "{{reservationId}}",
+                "assign-room"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check-in Guest",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/{{reservationId}}/check-in",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations",
+                "{{reservationId}}",
+                "check-in"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check-out Guest",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/{{reservationId}}/check-out",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations",
+                "{{reservationId}}",
+                "check-out"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Reservation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"ลูกค้าเปลี่ยนแปลงแผนการเดินทาง\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/{{reservationId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations",
+                "{{reservationId}}",
+                "cancel"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark No-Show",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/{{reservationId}}/no-show",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations",
+                "{{reservationId}}",
+                "no-show"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Stay Operations & Front Desk",
+      "item": [
+        {
+          "name": "Get Daily Operations Dashboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/operations/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "operations",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Expected Arrivals",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/operations/arrivals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "operations",
+                "arrivals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Expected Departures",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/operations/departures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "operations",
+                "departures"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get In-House Guests",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/operations/in-house",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "operations",
+                "in-house"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Room Move (In-House Guest)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newRoomId\": \"{{roomId}}\",\n  \"reason\": \"แอร์ในห้องพักเดิมมีน้ำรั่วซึม ช่างกำลังเข้าซ่อม\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/operations/reservations/{{reservationId}}/room-move",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "operations",
+                "reservations",
+                "{{reservationId}}",
+                "room-move"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Take Room Out of Service / Maintenance",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Maintenance\",\n  \"reason\": \"ทาสีผนังห้องใหม่และเปลี่ยนสุขภัณฑ์\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/operations/rooms/{{roomId}}/out-of-service",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "operations",
+                "rooms",
+                "{{roomId}}",
+                "out-of-service"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Return Room to Active Service",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetStatus\": \"Clean\",\n  \"notes\": \"ช่างซ่อมเสร็จเรียบร้อยและทำความสะอาดแล้ว\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/operations/rooms/{{roomId}}/return-to-service",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "operations",
+                "rooms",
+                "{{roomId}}",
+                "return-to-service"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Billing & Folios",
+      "item": [
+        {
+          "name": "List Property Folios",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/folios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "folios"
+              ],
+              "query": [
+                {
+                  "key": "reservationId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get or Create Reservation Folio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('folioId', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Main guest billing account\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/reservations/{{reservationId}}/folio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "reservations",
+                "{{reservationId}}",
+                "folio"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Folio Details by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/folios/{{folioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "folios",
+                "{{folioId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Folio Charge (Minibar / Food / Service)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Minibar\",\n  \"description\": \"เครื่องดื่มเบียร์สิงห์ 2 กระป๋องและขนมขบเคี้ยว\",\n  \"unitPrice\": 120.0,\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/folios/{{folioId}}/charges",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "folios",
+                "{{folioId}}",
+                "charges"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record Folio Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.payments && jsonData.payments.length > 0) {",
+                  "        pm.environment.set('paymentId', jsonData.payments[jsonData.payments.length - 1].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"method\": \"PromptPay\",\n  \"amount\": 500.0,\n  \"referenceNumber\": \"TXN-SCB-998877\",\n  \"notes\": \"สแกนจ่าย QR หน้าฟรอนต์\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/folios/{{folioId}}/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "folios",
+                "{{folioId}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reverse Folio Payment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"ลูกค้าจ่ายผิดยอด / ยกเลิกรายการชำระซ้ำซ้อน\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/folios/{{folioId}}/payments/{{paymentId}}/reverse",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "folios",
+                "{{folioId}}",
+                "payments",
+                "{{paymentId}}",
+                "reverse"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Close Folio (Zero Balance Settle)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/folios/{{folioId}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "folios",
+                "{{folioId}}",
+                "close"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Operational & Financial Reports",
+      "item": [
+        {
+          "name": "Daily Cashier & Transactions Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/reports/daily-transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "reports",
+                "daily-transactions"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Room Occupancy Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/reports/occupancy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "reports",
+                "occupancy"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "endDate",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Revenue by Category Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/reports/revenue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "reports",
+                "revenue"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "endDate",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Apartment - Tenants & Agreements",
+      "item": [
+        {
+          "name": "Get Tenants",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/tenants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "tenants"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Tenant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.environment.set(\"tenantId\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"สมชาย รักสงบ\",\n  \"nationalIdOrPassport\": \"1100200300400\",\n  \"phoneNumber\": \"0812345678\",\n  \"email\": \"somchai@tenant.com\",\n  \"emergencyContactName\": \"สมศรี รักสงบ\",\n  \"emergencyContactPhone\": \"0819998888\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/tenants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "tenants"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Rental Agreements",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/agreements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "agreements"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Rental Agreement",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.environment.set(\"agreementId\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agreementNumber\": \"AGR-202611-301\",\n  \"tenantId\": \"{{tenantId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"startDate\": \"2026-11-01\",\n  \"endDate\": \"2027-04-30\",\n  \"monthlyRent\": 6000.00,\n  \"securityDeposit\": 12000.00,\n  \"billingCycleDay\": 25,\n  \"notes\": \"สัญญาเช่า 6 เดือน\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/agreements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "agreements"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record Deposit Payment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 12000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agreements/{{agreementId}}/deposit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agreements",
+                "{{agreementId}}",
+                "deposit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate Agreement",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agreements/{{agreementId}}/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agreements",
+                "{{agreementId}}",
+                "activate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Renew Agreement",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newEndDate\": \"2027-10-31\",\n  \"newMonthlyRent\": 6200.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agreements/{{agreementId}}/renew",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agreements",
+                "{{agreementId}}",
+                "renew"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Terminate Agreement (Move-Out Settlement)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"ย้ายออกตามกำหนดสัญญา\",\n  \"refundAmount\": 11500.00,\n  \"deductionAmount\": 500.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agreements/{{agreementId}}/terminate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agreements",
+                "{{agreementId}}",
+                "terminate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "14. Apartment - Utility Meters & Billing",
+      "item": [
+        {
+          "name": "Get Meter Readings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/meter-readings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "meter-readings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record Meter Reading",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"utilityType\": \"Electricity\",\n  \"readingDate\": \"2026-11-25\",\n  \"billingMonth\": \"2026-11\",\n  \"previousReading\": 100.00,\n  \"currentReading\": 150.00,\n  \"unitPrice\": 7.00,\n  \"notes\": \"มิเตอร์ไฟรอบ พ.ย.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/meter-readings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "meter-readings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Latest Room Meter Readings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/rooms/{{roomId}}/meter-readings/latest",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "rooms",
+                "{{roomId}}",
+                "meter-readings",
+                "latest"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Monthly Invoices",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "invoices"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate Monthly Invoices",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.invoices && jsonData.invoices.length > 0) {",
+                  "    pm.environment.set(\"invoiceId\", jsonData.invoices[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"billingMonth\": \"2026-11\",\n  \"dueDate\": \"2026-12-05\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{propertyId}}/invoices/generate-monthly",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{propertyId}}",
+                "invoices",
+                "generate-monthly"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/invoices/{{invoiceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoiceId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Invoice Item",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemType\": \"CommonFee\",\n  \"description\": \"ค่าส่วนกลางและอินเทอร์เน็ต\",\n  \"amount\": 300.00,\n  \"unitPrice\": 300.00,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/invoices/{{invoiceId}}/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoiceId}}",
+                "items"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record Invoice Payment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 6530.00,\n  \"method\": \"PromptPay\",\n  \"referenceNumber\": \"PP-202611-1234\",\n  \"notes\": \"ชำระเงินเรียบร้อย\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/invoices/{{invoiceId}}/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoiceId}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Invoice",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"ออกบิลซ้ำซ้อนหรือมีการแก้ไขสัญญา\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/invoices/{{invoiceId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoiceId}}",
+                "cancel"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "15. Security & Production Hardening",
+      "item": [
+        {
+          "name": "Liveness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz/live",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "healthz",
+                "live"
+              ]
+            },
+            "description": "Phase 8 — Liveness probe. Returns 200 when the API process is running. Used by container orchestrators (Kubernetes) to determine if the container should be restarted."
+          },
+          "response": []
+        },
+        {
+          "name": "Readiness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz/ready",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "healthz",
+                "ready"
+              ]
+            },
+            "description": "Phase 8 — Readiness probe. Returns 200 when the API can serve traffic (database reachable). Used by container orchestrators to control traffic routing."
+          },
+          "response": []
+        },
+        {
+          "name": "Security Headers Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "healthz"
+              ]
+            },
+            "description": "Phase 8 — Verify OWASP security headers are present in every response: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy, Content-Security-Policy."
+          },
+          "response": []
+        },
+        {
+          "name": "Correlation ID — Client-Provided",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-Id",
+                "value": "my-trace-id-12345",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "healthz"
+              ]
+            },
+            "description": "Phase 8 — When a client provides X-Correlation-Id, the same value must be echoed back in the response header."
+          },
+          "response": []
+        },
+        {
+          "name": "Correlation ID — Server Generated",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "healthz"
+              ]
+            },
+            "description": "Phase 8 — When no X-Correlation-Id is sent, the server generates one and returns it in X-Correlation-Id response header. Verify the header is present."
+          },
+          "response": []
+        },
+        {
+          "name": "Unauthenticated Access — Reservations (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations"
+              ]
+            },
+            "description": "Phase 8 — Unauthenticated requests to protected endpoints must return 401 Unauthorized."
+          },
+          "response": []
+        },
+        {
+          "name": "Unauthenticated Access — Guests (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests"
+              ]
+            },
+            "description": "Phase 8 — Unauthenticated requests to guest endpoints must return 401 Unauthorized."
+          },
+          "response": []
+        },
+        {
+          "name": "IDOR — Cross-Tenant Organization Read (403/404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations/{{anotherOrgId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "organizations",
+                "{{anotherOrgId}}"
+              ]
+            },
+            "description": "Phase 8 — IDOR protection test. A user authenticated for org A must not be able to read org B data. Expected: 403 Forbidden or 404 Not Found.\n\nSet {{anotherOrgId}} to a valid org ID that belongs to a different organization than the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "IDOR — Cross-Tenant Property Read (403/404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/properties/{{anotherOrgPropertyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                "{{anotherOrgPropertyId}}"
+              ]
+            },
+            "description": "Phase 8 — IDOR protection. Authenticated as Org A, attempt to read a property that belongs to Org B. Must return 403 or 404."
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Email Format — Register (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"TestPassword123!\",\n  \"fullName\": \"Test User\",\n  \"phoneNumber\": \"+66800000001\",\n  \"organizationName\": \"Test Org\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Phase 8 — Input validation. Registration with an invalid email format must return 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Empty Password — Register (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"valid@test.com\",\n  \"password\": \"\",\n  \"fullName\": \"Test User\",\n  \"phoneNumber\": \"+66800000001\",\n  \"organizationName\": \"Test Org\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Phase 8 — Input validation. Registration with an empty password must return 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Date Range — Create Reservation (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "X-Organization-Id",
+                "value": "{{organizationId}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"guestId\": \"{{guestId}}\",\n  \"checkInDate\": \"2025-12-31\",\n  \"checkOutDate\": \"2025-12-30\",\n  \"adults\": 1,\n  \"children\": 0,\n  \"roomTypeId\": \"{{roomTypeId}}\",\n  \"roomId\": null,\n  \"quotedRate\": 1000.0,\n  \"totalAmount\": 1000.0,\n  \"currency\": \"THB\",\n  \"source\": \"Direct\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations"
+              ]
+            },
+            "description": "Phase 8 — Input validation. CheckOut before CheckIn must return 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Malformed JWT Token (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer this.is.not.a.valid.jwt",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Phase 8 — Token manipulation protection. A malformed or unsigned JWT must be rejected with 401 Unauthorized."
+          },
+          "response": []
+        },
+        {
+          "name": "Rate Limit — Auth Endpoint (429 after limit)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@test.com\",\n  \"password\": \"wrong\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Phase 8 — Rate limiting. Auth endpoints are limited to 20 requests/minute per IP. After exceeding the limit, subsequent requests return 429 Too Many Requests. This request demonstrates the endpoint; use a runner or script to hit the limit in testing."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

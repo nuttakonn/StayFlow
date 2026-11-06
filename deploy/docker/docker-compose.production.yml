@@ -1,0 +1,100 @@
+# StayFlow PMS — Production Docker Compose
+#
+# This file bundles PostgreSQL, the StayFlow API, and a Caddy reverse proxy
+# (automatic TLS via Let's Encrypt) for on-premise deployments.
+#
+# Setup:
+#   1. Copy .env.example to .env and fill in every value.
+#   2. Set DOMAIN and ACME_EMAIL in .env.
+#   3. Build the backend image: docker build -t stayflow-api -f src/backend/Dockerfile .
+#   4. Copy the React build: cp -r src/frontend/stayflow-web/dist ./deploy/docker/frontend
+#   5. docker compose -f deploy/docker/docker-compose.production.yml up -d
+#
+# Never run docker compose down -v in production — it deletes the database volume.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: stayflow-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-stayflow_db}
+      POSTGRES_USER: ${POSTGRES_USER:-stayflow_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-stayflow_app} -d ${POSTGRES_DB:-stayflow_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    image: stayflow-api:latest
+    container_name: stayflow-api
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5000
+      DEPLOYMENT_MODE: OnPremise
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;
+        Database=${POSTGRES_DB:-stayflow_db};
+        Username=${POSTGRES_USER:-stayflow_app};
+        Password=${POSTGRES_PASSWORD};
+      Cors__AllowedOrigins__0: https://${DOMAIN:?DOMAIN is required}
+      RateLimiting__AuthPermitLimit: ${RATE_AUTH:-20}
+      RateLimiting__ApiPermitLimit: ${RATE_API:-300}
+      # Caddy sets X-Forwarded-For; tell Kestrel to trust it from the caddy container
+      ReverseProxy__KnownProxies__0: 172.18.0.0/16
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+      - proxy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: stayflow-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL is required for Let's Encrypt}
+    volumes:
+      - ./Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - ./frontend:/srv/frontend:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - proxy
+    depends_on:
+      api:
+        condition: service_healthy
+
+networks:
+  backend:
+    driver: bridge
+  proxy:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local

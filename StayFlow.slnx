@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/StayFlow.Api/StayFlow.Api.csproj" />
+    <Project Path="src/backend/StayFlow.BuildingBlocks/StayFlow.BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/backend/" />
+  <Folder Name="/tests/backend/IntegrationTests/">
+    <Project Path="tests/backend/IntegrationTests/StayFlow.IntegrationTests/StayFlow.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/backend/UnitTests/">
+    <Project Path="tests/backend/UnitTests/StayFlow.UnitTests/StayFlow.UnitTests.csproj" />
+  </Folder>
+</Solution>
