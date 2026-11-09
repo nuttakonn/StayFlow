@@ -14,7 +14,10 @@ public record CreateGuestRequest(
     string? NationalId,
     string? PassportNumber,
     string? Nationality,
-    string? Notes
+    string? Notes,
+    string? DateOfBirth = null,      // yyyy-MM-dd; Thai compliance
+    string? VisaType = null,         // Tourist/Business/Transit/Exempt
+    string? CountryOfOrigin = null   // ISO country name
 );
 
 public record UpdateGuestRequest(
@@ -24,7 +27,10 @@ public record UpdateGuestRequest(
     string? NationalId,
     string? PassportNumber,
     string? Nationality,
-    string? Notes
+    string? Notes,
+    string? DateOfBirth = null,
+    string? VisaType = null,
+    string? CountryOfOrigin = null
 );
 
 public record GuestDto(
@@ -39,7 +45,10 @@ public record GuestDto(
     string? Notes,
     bool IsActive,
     DateTimeOffset CreatedAtUtc,
-    DateTimeOffset? UpdatedAtUtc
+    DateTimeOffset? UpdatedAtUtc,
+    string? DateOfBirth,
+    string? VisaType,
+    string? CountryOfOrigin
 );
 
 public record GuestStayDto(
@@ -168,7 +177,11 @@ public static class GuestEndpoints
             nationalId: request.NationalId,
             passportNumber: request.PassportNumber,
             nationality: request.Nationality,
-            notes: request.Notes);
+            notes: request.Notes,
+            dateOfBirth: string.IsNullOrWhiteSpace(request.DateOfBirth) ? null
+                : DateOnly.TryParse(request.DateOfBirth, out var parsedDob) ? parsedDob : null,
+            visaType: request.VisaType,
+            countryOfOrigin: request.CountryOfOrigin);
 
         dbContext.Guests.Add(guest);
         await dbContext.SaveChangesAsync(ct);
@@ -216,7 +229,11 @@ public static class GuestEndpoints
             request.NationalId,
             request.PassportNumber,
             request.Nationality,
-            request.Notes);
+            request.Notes,
+            dateOfBirth: string.IsNullOrWhiteSpace(request.DateOfBirth) ? null
+                : DateOnly.TryParse(request.DateOfBirth, out var dob) ? dob : null,
+            visaType: request.VisaType,
+            countryOfOrigin: request.CountryOfOrigin);
 
         await dbContext.SaveChangesAsync(ct);
 
@@ -287,5 +304,8 @@ public static class GuestEndpoints
         g.Notes,
         g.IsActive,
         g.CreatedAtUtc,
-        g.UpdatedAtUtc);
+        g.UpdatedAtUtc,
+        g.DateOfBirth?.ToString("yyyy-MM-dd"),
+        g.VisaType,
+        g.CountryOfOrigin);
 }

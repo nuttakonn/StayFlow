@@ -7,7 +7,7 @@
 > connecting to OTAs (Agoda, Booking.com, Traveloka, Trip.com) through
 > third-party channel managers (STAAH, SiteMinder).
 >
-> **Status:** Core hotel & apartment modules implemented. EF Core migrations complete. Channel manager foundation in progress. Rate management, booking engine, and Thai compliance planned for M11–M12.\
+> **Status:** Core hotel & apartment modules implemented. EF Core migrations complete. Channel manager, rate management, ancillary services, and Thai compliance (M11) complete. Email automation and direct booking engine planned for M12–M13.\
 > **Primary instruction file:** `Claude.md`\
 > **Important:** Production-ready is an engineering target, not a claim
 > that the system is safe to launch without completing the release
@@ -1407,9 +1407,9 @@ decisions, and acceptance criteria.
   M1.5        ✅ Complete      i18n architecture — react-i18next + 3 locale files (758 parity-checked keys) + user language preference + switcher + all 20 feature components migrated off hardcoded Thai (EPIC-51 ✅)
   M8          ✅ Complete      Concurrency hardening (EPIC-25/52 ✅); per-IP rate limiter (EPIC-53 ✅); on-premise installer guide ✅, TLS configuration guide ✅, backup runbook ✅ (docs/operations/)
   M9          ✅ Complete      Channel manager integration: ChannelConnection CRUD, ChannelRateMapping, StaahChannelManagerProvider (OTA_ResNotifRQ parser + HMAC-SHA256 webhook), IChannelAvailabilitySync, inbound webhook endpoint, manual sync trigger, 23 integration tests (Phase9ChannelManagerTests)
-  M10         📋 Planned       Rate plans, promotions, coupons, group bookings, drag-drop calendar
-  M10.5       📋 Planned       Ancillary services, meal packages, quotations, ADR/RevPAR, Excel export
-  M11         📋 Planned       Thai compliance: R.S.3, R.S.4, TM.30, government Excel export
+  M10         ✅ Complete      Rate plan CRUD (weekday/weekend/seasonal/monthly/min-stay/blackout), coupon system (percentage/fixed/free-night, server-side validation, usage tracking), group bookings (create/link reservations/cancel propagation), reservation rate locking (quoted rate never recalculated), staff-only rate plan access control, 20 integration tests (Phase10RatePlanTests)
+  M10.5       ✅ Complete      Ancillary services (ServiceItem CRUD), meal packages (Package + PackageItem with MealPlanType), quotations (create/convert-to-reservation/cancel, duplicate-convert guard), ADR + RevPAR KPI endpoint, occupancy and revenue XLSX export (ClosedXML), 15 integration tests (Phase10_5Tests)
+  M11         ✅ Complete      Thai compliance: Guest extended (DateOfBirth/VisaType/CountryOfOrigin), Property.EnableThaiCompliance flag, ThaiComplianceRecord (immutable per-stay snapshot) + ThaiComplianceAmendment (before/after audit), R.S.3/R.S.4/TM.30 Excel exports (ClosedXML, Thai-language headers), one record per reservation (409 guard), foreignersOnly filter for TM.30, EF migration (AddThaiCompliance), 13 integration tests (Phase11ThaiComplianceTests) — 140/140 total tests pass
   M12         📋 Planned       Email automation: confirmations, reminders, daily reports
   M13         📋 Planned       Direct booking engine (customer-facing web page)
   M14         📋 Planned       Security hardening, UAT, pilot hotel go-live

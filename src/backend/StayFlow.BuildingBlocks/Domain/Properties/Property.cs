@@ -25,6 +25,9 @@ public class Property : TenantEntity<Guid>
     public TimeOnly CheckInTime { get; private set; } = new(14, 0);
     public TimeOnly CheckOutTime { get; private set; } = new(12, 0);
 
+    // Thai compliance — must be explicitly enabled per property
+    public bool EnableThaiCompliance { get; private set; } = false;
+
     private Property() { } // EF Core
 
     public static Property Create(
@@ -82,6 +85,12 @@ public class Property : TenantEntity<Guid>
     {
         CheckInTime = checkInTime;
         CheckOutTime = checkOutTime;
+        Touch();
+    }
+
+    public void SetThaiComplianceMode(bool enabled)
+    {
+        EnableThaiCompliance = enabled;
         Touch();
     }
 

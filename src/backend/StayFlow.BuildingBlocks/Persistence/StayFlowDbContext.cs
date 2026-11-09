@@ -7,6 +7,7 @@ using StayFlow.BuildingBlocks.Domain.ChannelManager;
 using StayFlow.BuildingBlocks.Domain.Apartments;
 using StayFlow.BuildingBlocks.Domain.Rates;
 using StayFlow.BuildingBlocks.Domain.Services;
+using StayFlow.BuildingBlocks.Domain.ThaiCompliance;
 using StayFlow.BuildingBlocks.Domain.Billing;
 using StayFlow.BuildingBlocks.Domain.Maintenance;
 using StayFlow.BuildingBlocks.Domain.Branding;
@@ -85,6 +86,10 @@ public class StayFlowDbContext : DbContext
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<PackageItem> PackageItems => Set<PackageItem>();
     public DbSet<Quotation> Quotations => Set<Quotation>();
+
+    // M11: Thai Compliance
+    public DbSet<ThaiComplianceRecord> ThaiComplianceRecords => Set<ThaiComplianceRecord>();
+    public DbSet<ThaiComplianceAmendment> ThaiComplianceAmendments => Set<ThaiComplianceAmendment>();
 
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<PlanEntitlement> PlanEntitlements => Set<PlanEntitlement>();
@@ -742,6 +747,55 @@ public class StayFlowDbContext : DbContext
             b.HasIndex(x => x.OrganizationId);
             b.HasIndex(x => x.PropertyId);
             b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        // ── M11: Thai Compliance ──────────────────────────────────────────────
+
+        modelBuilder.Entity<ThaiComplianceRecord>(b =>
+        {
+            b.ToTable("thai_compliance_records");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.GuestFullName).HasMaxLength(200).IsRequired();
+            b.Property(x => x.NationalId).HasMaxLength(20);
+            b.Property(x => x.PassportNumber).HasMaxLength(50);
+            b.Property(x => x.Nationality).HasMaxLength(100);
+            b.Property(x => x.VisaType).HasMaxLength(50);
+            b.Property(x => x.CountryOfOrigin).HasMaxLength(100);
+            b.Property(x => x.RoomNumber).HasMaxLength(50);
+            b.HasMany(x => x.Amendments).WithOne().HasForeignKey(x => x.RecordId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => new { x.PropertyId, x.ReservationId }).IsUnique();
+            b.HasIndex(x => new { x.PropertyId, x.CheckInDate });
+            b.HasIndex(x => new { x.PropertyId, x.IsForeigner });
+            b.HasIndex(x => x.OrganizationId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        modelBuilder.Entity<ThaiComplianceAmendment>(b =>
+        {
+            b.ToTable("thai_compliance_amendments");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Reason).HasMaxLength(500).IsRequired();
+            b.Property(x => x.AmendedByEmail).HasMaxLength(255).IsRequired();
+            b.Property(x => x.NewNationalId).HasMaxLength(20);
+            b.Property(x => x.NewPassportNumber).HasMaxLength(50);
+            b.Property(x => x.NewNationality).HasMaxLength(100);
+            b.Property(x => x.NewVisaType).HasMaxLength(50);
+            b.Property(x => x.NewCountryOfOrigin).HasMaxLength(100);
+        });
+
+        // ── M11: Guest Thai compliance fields ────────────────────────────────
+        modelBuilder.Entity<Guest>(b =>
+        {
+            b.Property(x => x.DateOfBirth).IsRequired(false);
+            b.Property(x => x.VisaType).HasMaxLength(50).IsRequired(false);
+            b.Property(x => x.CountryOfOrigin).HasMaxLength(100).IsRequired(false);
+        });
+
+        // ── M11: Property Thai compliance flag ───────────────────────────────
+        modelBuilder.Entity<Property>(b =>
+        {
+            b.Property(x => x.EnableThaiCompliance).HasDefaultValue(false);
         });
     }
 

@@ -13,6 +13,11 @@ public class Guest : TenantEntity<Guid>
     public string? Notes { get; private set; }
     public bool IsActive { get; private set; } = true;
 
+    // Thai compliance fields (required for R.S.3, R.S.4, TM.30)
+    public DateOnly? DateOfBirth { get; private set; }
+    public string? VisaType { get; private set; }       // e.g. "Tourist", "Business", "Transit", "Exempt"
+    public string? CountryOfOrigin { get; private set; } // ISO country name
+
     private Guest() { } // EF Core
 
     public static Guest Create(
@@ -23,7 +28,10 @@ public class Guest : TenantEntity<Guid>
         string? nationalId = null,
         string? passportNumber = null,
         string? nationality = null,
-        string? notes = null)
+        string? notes = null,
+        DateOnly? dateOfBirth = null,
+        string? visaType = null,
+        string? countryOfOrigin = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fullName);
 
@@ -39,7 +47,10 @@ public class Guest : TenantEntity<Guid>
             Nationality = nationality?.Trim(),
             Notes = notes?.Trim(),
             IsActive = true,
-            CreatedAtUtc = DateTimeOffset.UtcNow
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            DateOfBirth = dateOfBirth,
+            VisaType = visaType?.Trim(),
+            CountryOfOrigin = countryOfOrigin?.Trim()
         };
     }
 
@@ -50,7 +61,10 @@ public class Guest : TenantEntity<Guid>
         string? nationalId,
         string? passportNumber,
         string? nationality,
-        string? notes)
+        string? notes,
+        DateOnly? dateOfBirth = null,
+        string? visaType = null,
+        string? countryOfOrigin = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fullName);
 
@@ -61,6 +75,9 @@ public class Guest : TenantEntity<Guid>
         PassportNumber = passportNumber?.Trim();
         Nationality = nationality?.Trim();
         Notes = notes?.Trim();
+        DateOfBirth = dateOfBirth;
+        VisaType = visaType?.Trim();
+        CountryOfOrigin = countryOfOrigin?.Trim();
         Touch();
     }
 

@@ -429,6 +429,7 @@ app.MapGroupBookingEndpoints();
 app.MapServiceItemEndpoints();
 app.MapPackageEndpoints();
 app.MapQuotationEndpoints();
+app.MapThaiComplianceEndpoints();
 
 app.Run();
 

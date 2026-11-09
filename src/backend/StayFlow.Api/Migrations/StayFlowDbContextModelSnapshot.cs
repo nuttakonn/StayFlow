@@ -1280,8 +1280,15 @@ namespace StayFlow.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CountryOfOrigin")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .HasMaxLength(255)
@@ -1319,6 +1326,10 @@ namespace StayFlow.Api.Migrations
 
                     b.Property<DateTimeOffset?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VisaType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
@@ -1365,6 +1376,11 @@ namespace StayFlow.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
+
+                    b.Property<bool>("EnableThaiCompliance")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("IanaTimeZone")
                         .IsRequired()
@@ -2274,6 +2290,167 @@ namespace StayFlow.Api.Migrations
                     b.ToTable("property_memberships", (string)null);
                 });
 
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.ThaiCompliance.ThaiComplianceAmendment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AmendedByEmail")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NewCountryOfOrigin")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateOnly?>("NewDateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("NewNationalId")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("NewNationality")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NewPassportNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("NewVisaType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PrevCountryOfOrigin")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("PrevDateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("PrevNationalId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrevNationality")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrevPassportNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrevVisaType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("RecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecordId");
+
+                    b.ToTable("thai_compliance_amendments", (string)null);
+                });
+
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.ThaiCompliance.ThaiComplianceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Adults")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("CheckInDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("CheckOutDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("CountryOfOrigin")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("GuestFullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("GuestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsAmended")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsForeigner")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("NationalId")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Nationality")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PassportNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("RecordedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RoomNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VisaType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("PropertyId", "CheckInDate");
+
+                    b.HasIndex("PropertyId", "IsForeigner");
+
+                    b.HasIndex("PropertyId", "ReservationId")
+                        .IsUnique();
+
+                    b.ToTable("thai_compliance_records", (string)null);
+                });
+
             modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Apartments.InvoicePaymentRecord", b =>
                 {
                     b.HasOne("StayFlow.BuildingBlocks.Domain.Apartments.MonthlyInvoice", null)
@@ -2429,6 +2606,15 @@ namespace StayFlow.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.ThaiCompliance.ThaiComplianceAmendment", b =>
+                {
+                    b.HasOne("StayFlow.BuildingBlocks.Domain.ThaiCompliance.ThaiComplianceRecord", null)
+                        .WithMany("Amendments")
+                        .HasForeignKey("RecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Apartments.MonthlyInvoice", b =>
                 {
                     b.Navigation("Items");
@@ -2478,6 +2664,11 @@ namespace StayFlow.Api.Migrations
             modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Tenancy.Organization", b =>
                 {
                     b.Navigation("Memberships");
+                });
+
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.ThaiCompliance.ThaiComplianceRecord", b =>
+                {
+                    b.Navigation("Amendments");
                 });
 #pragma warning restore 612, 618
         }
