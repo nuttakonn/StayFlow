@@ -5,6 +5,7 @@ using StayFlow.BuildingBlocks.ChannelManager;
 using StayFlow.BuildingBlocks.Domain.Inventory;
 using StayFlow.BuildingBlocks.Domain.Rates;
 using StayFlow.BuildingBlocks.Domain.Reservations;
+using StayFlow.BuildingBlocks.Email;
 using StayFlow.BuildingBlocks.MultiTenancy;
 using StayFlow.BuildingBlocks.Persistence;
 
@@ -460,14 +461,67 @@ public static class ReservationEndpoints
         StayFlowDbContext dbContext,
         ITenantContext tenantContext,
         IChannelAvailabilitySync channelSync,
+        IEmailService emailService,
         CancellationToken ct)
-        => await PerformTransitionAsync(id, dbContext, tenantContext, ct,
+    {
+        var result = await PerformTransitionAsync(id, dbContext, tenantContext, ct,
             (r, _) =>
             {
                 r.Confirm();
                 dbContext.ReservationStatusHistories.Add(r.StatusHistories.Last());
             },
             afterSave: r => channelSync.TriggerAsync(r.PropertyId, r.RoomTypeId, r.CheckInDate, r.CheckOutDate, ct));
+
+        // Send confirmation email synchronously but swallow exceptions — email failure
+        // must not roll back a confirmed booking.
+        if (result is IValueHttpResult { Value: ReservationDto dto })
+        {
+            try
+            {
+                await SendBookingConfirmationAsync(dbContext, emailService, dto, ct);
+            }
+            catch
+            {
+                // Email failure is non-fatal for the booking operation.
+            }
+        }
+
+        return result;
+    }
+
+    private static async Task SendBookingConfirmationAsync(
+        StayFlowDbContext db,
+        IEmailService emailService,
+        ReservationDto dto,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(dto.GuestEmail)) return;
+
+        // Check email settings for this property (default: send if no settings record)
+        var settings = await db.EmailNotificationSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.PropertyId == dto.PropertyId, ct);
+        if (settings is { SendBookingConfirmation: false }) return;
+
+        var property = await db.Properties.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == dto.PropertyId, ct);
+
+        var msg = EmailTemplates.BookingConfirmation(
+            toAddress: dto.GuestEmail,
+            guestName: dto.GuestName,
+            propertyName: property?.Name ?? "Hotel",
+            reservationRef: dto.Id.ToString()[..8].ToUpperInvariant(),
+            roomType: dto.RoomTypeName ?? "Standard",
+            checkInDate: dto.CheckInDate,
+            checkOutDate: dto.CheckOutDate,
+            nights: dto.NumberOfNights,
+            adults: dto.Adults,
+            totalAmount: dto.TotalAmount,
+            currency: dto.Currency,
+            supportEmail: property?.ContactEmail ?? "support@stayflow.local");
+
+        await emailService.SendAsync(msg, ct);
+    }
 
     private static async Task<IResult> AssignRoomAsync(
         Guid id,

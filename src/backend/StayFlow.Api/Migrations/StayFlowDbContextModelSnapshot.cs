@@ -1274,6 +1274,48 @@ namespace StayFlow.Api.Migrations
                     b.ToTable("maintenance_requests", (string)null);
                 });
 
+            modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Notifications.EmailNotificationSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DailyReportRecipients")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DailyReportSendHourUtc")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("SendBookingConfirmation")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SendDailyReport")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("PropertyId")
+                        .IsUnique();
+
+                    b.ToTable("email_notification_settings", (string)null);
+                });
+
             modelBuilder.Entity("StayFlow.BuildingBlocks.Domain.Parties.Guest", b =>
                 {
                     b.Property<Guid>("Id")

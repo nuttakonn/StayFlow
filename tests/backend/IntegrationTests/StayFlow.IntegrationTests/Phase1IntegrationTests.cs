@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using StayFlow.Api.Endpoints;
 using StayFlow.BuildingBlocks.Branding;
 using StayFlow.BuildingBlocks.Domain.Properties;
 using StayFlow.BuildingBlocks.Domain.Tenancy;
+using StayFlow.BuildingBlocks.Email;
 using StayFlow.BuildingBlocks.Persistence;
 
 namespace StayFlow.IntegrationTests;
@@ -18,6 +20,10 @@ namespace StayFlow.IntegrationTests;
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _dbName = $"StayFlowTestDb_{Guid.NewGuid():N}";
+
+    // Shared NullEmailService so tests can inspect SentMessages
+    private readonly NullEmailService _nullEmailService =
+        new(Microsoft.Extensions.Logging.Abstractions.NullLogger<NullEmailService>.Instance);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -54,8 +60,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 options.ConfigureWarnings(w =>
                     w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
             });
+
+            // Replace the email service registration with our shared NullEmailService
+            // so tests can inspect sent messages.
+            services.RemoveAll<IEmailService>();
+            services.AddSingleton<IEmailService>(_nullEmailService);
         });
     }
+
+    /// <summary>Returns the NullEmailService used in this test session for inspection.</summary>
+    public NullEmailService? GetNullEmailService() => _nullEmailService;
 }
 
 public class Phase1IntegrationTests : IClassFixture<CustomWebApplicationFactory>

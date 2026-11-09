@@ -13,6 +13,9 @@ using Microsoft.IdentityModel.Tokens;
 using StayFlow.Api;
 using StayFlow.Api.Endpoints;
 using StayFlow.BuildingBlocks.Branding;
+using StayFlow.Api.Email;
+using StayFlow.BuildingBlocks.Email;
+using StayFlow.BuildingBlocks.Jobs;
 using StayFlow.BuildingBlocks.ChannelManager;
 using StayFlow.BuildingBlocks.Demo;
 using StayFlow.BuildingBlocks.Deployment;
@@ -32,6 +35,8 @@ builder.Services.Configure<DeploymentOptions>(
     builder.Configuration.GetSection(DeploymentOptions.SectionName));
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
+builder.Services.Configure<EmailOptions>(
+    builder.Configuration.GetSection(EmailOptions.SectionName));
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 
@@ -61,6 +66,17 @@ builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IBrandingResolver, BrandingResolver>();
 builder.Services.AddScoped<IEntitlementService, EntitlementService>();
+
+// Email service: use SmtpEmailService when SMTP host is configured; NullEmailService otherwise.
+// NullEmailService logs sends to console and captures them in memory — suitable for dev/test.
+var emailOpts = builder.Configuration.GetSection(EmailOptions.SectionName).Get<EmailOptions>() ?? new EmailOptions();
+if (emailOpts.IsConfigured)
+    builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
+else
+    builder.Services.AddSingleton<IEmailService, NullEmailService>();
+
+// Background job: sends daily property digest emails at the per-property UTC hour
+builder.Services.AddHostedService<DailyReportBackgroundService>();
 
 // Channel Manager Providers (one implementation per OTA channel manager)
 builder.Services.AddHttpClient();
@@ -430,6 +446,7 @@ app.MapServiceItemEndpoints();
 app.MapPackageEndpoints();
 app.MapQuotationEndpoints();
 app.MapThaiComplianceEndpoints();
+app.MapEmailSettingsEndpoints();
 
 app.Run();
 

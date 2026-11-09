@@ -7,6 +7,7 @@ using StayFlow.BuildingBlocks.Domain.ChannelManager;
 using StayFlow.BuildingBlocks.Domain.Apartments;
 using StayFlow.BuildingBlocks.Domain.Rates;
 using StayFlow.BuildingBlocks.Domain.Services;
+using StayFlow.BuildingBlocks.Domain.Notifications;
 using StayFlow.BuildingBlocks.Domain.ThaiCompliance;
 using StayFlow.BuildingBlocks.Domain.Billing;
 using StayFlow.BuildingBlocks.Domain.Maintenance;
@@ -90,6 +91,9 @@ public class StayFlowDbContext : DbContext
     // M11: Thai Compliance
     public DbSet<ThaiComplianceRecord> ThaiComplianceRecords => Set<ThaiComplianceRecord>();
     public DbSet<ThaiComplianceAmendment> ThaiComplianceAmendments => Set<ThaiComplianceAmendment>();
+
+    // M12: Email Notification Settings
+    public DbSet<EmailNotificationSettings> EmailNotificationSettings => Set<EmailNotificationSettings>();
 
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<PlanEntitlement> PlanEntitlements => Set<PlanEntitlement>();
@@ -796,6 +800,17 @@ public class StayFlowDbContext : DbContext
         modelBuilder.Entity<Property>(b =>
         {
             b.Property(x => x.EnableThaiCompliance).HasDefaultValue(false);
+        });
+
+        // ── M12: Email Notification Settings ─────────────────────────────────
+        modelBuilder.Entity<EmailNotificationSettings>(b =>
+        {
+            b.ToTable("email_notification_settings");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.DailyReportRecipients).HasMaxLength(2000).IsRequired();
+            b.HasIndex(x => x.PropertyId).IsUnique(); // one record per property
+            b.HasIndex(x => x.OrganizationId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
         });
     }
 
