@@ -6,6 +6,7 @@ using StayFlow.BuildingBlocks.Domain.Audit;
 using StayFlow.BuildingBlocks.Domain.ChannelManager;
 using StayFlow.BuildingBlocks.Domain.Apartments;
 using StayFlow.BuildingBlocks.Domain.Rates;
+using StayFlow.BuildingBlocks.Domain.Services;
 using StayFlow.BuildingBlocks.Domain.Billing;
 using StayFlow.BuildingBlocks.Domain.Maintenance;
 using StayFlow.BuildingBlocks.Domain.Branding;
@@ -78,6 +79,12 @@ public class StayFlowDbContext : DbContext
     public DbSet<RatePlanRestriction> RatePlanRestrictions => Set<RatePlanRestriction>();
     public DbSet<Coupon> Coupons => Set<Coupon>();
     public DbSet<GroupBooking> GroupBookings => Set<GroupBooking>();
+
+    // M10.5: Ancillary Services, Packages, Quotations
+    public DbSet<ServiceItem> ServiceItems => Set<ServiceItem>();
+    public DbSet<Package> Packages => Set<Package>();
+    public DbSet<PackageItem> PackageItems => Set<PackageItem>();
+    public DbSet<Quotation> Quotations => Set<Quotation>();
 
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<PlanEntitlement> PlanEntitlements => Set<PlanEntitlement>();
@@ -678,6 +685,60 @@ public class StayFlowDbContext : DbContext
             b.Property(x => x.AgreedRateNotes).HasMaxLength(500);
             b.Property(x => x.Notes).HasMaxLength(1000);
             b.Property(x => x.CancellationReason).HasMaxLength(500);
+            b.HasIndex(x => x.OrganizationId);
+            b.HasIndex(x => x.PropertyId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        // ── M10.5: Service Items ──────────────────────────────────────────────
+
+        modelBuilder.Entity<ServiceItem>(b =>
+        {
+            b.ToTable("service_items");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            b.Property(x => x.Description).HasMaxLength(500);
+            b.Property(x => x.Price).HasPrecision(18, 4).IsRequired();
+            b.Property(x => x.Unit).HasMaxLength(50).IsRequired();
+            b.HasIndex(x => x.OrganizationId);
+            b.HasIndex(x => x.PropertyId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        // ── M10.5: Packages ───────────────────────────────────────────────────
+
+        modelBuilder.Entity<Package>(b =>
+        {
+            b.ToTable("packages");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            b.Property(x => x.Description).HasMaxLength(500);
+            b.Property(x => x.RateAddOn).HasPrecision(18, 4).IsRequired();
+            b.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => x.OrganizationId);
+            b.HasIndex(x => x.PropertyId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        modelBuilder.Entity<PackageItem>(b =>
+        {
+            b.ToTable("package_items");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Notes).HasMaxLength(200);
+        });
+
+        // ── M10.5: Quotations ─────────────────────────────────────────────────
+
+        modelBuilder.Entity<Quotation>(b =>
+        {
+            b.ToTable("quotations");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.QuotationNumber).HasMaxLength(50).IsRequired();
+            b.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            b.Property(x => x.QuotedRatePerNight).HasPrecision(18, 4).IsRequired();
+            b.Property(x => x.TotalAmount).HasPrecision(18, 4).IsRequired();
+            b.Property(x => x.Notes).HasMaxLength(1000);
+            b.HasIndex(x => new { x.PropertyId, x.QuotationNumber }).IsUnique();
             b.HasIndex(x => x.OrganizationId);
             b.HasIndex(x => x.PropertyId);
             b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);

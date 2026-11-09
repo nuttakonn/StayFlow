@@ -17,7 +17,9 @@ public enum FolioItemType
     Laundry = 5,
     DamageOrLoss = 6,
     Adjustment = 7,
-    Other = 8
+    Other = 8,
+    AncillaryService = 9,
+    Package = 10
 }
 
 public enum PaymentMethod

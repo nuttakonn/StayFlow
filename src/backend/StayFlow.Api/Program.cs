@@ -426,6 +426,9 @@ app.MapChannelManagerEndpoints();
 app.MapRatePlanEndpoints();
 app.MapCouponEndpoints();
 app.MapGroupBookingEndpoints();
+app.MapServiceItemEndpoints();
+app.MapPackageEndpoints();
+app.MapQuotationEndpoints();
 
 app.Run();
 
