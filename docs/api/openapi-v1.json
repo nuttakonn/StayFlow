@@ -6458,6 +6458,640 @@
           }
         }
       }
+    },
+    "/api/v1/properties/{propertyId}/thai-compliance/enable": {
+      "post": {
+        "tags": [
+          "Thai Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnableThaiComplianceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propertyId}/thai-compliance/records": {
+      "get": {
+        "tags": [
+          "Thai Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "foreignersOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Thai Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateComplianceRecordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propertyId}/thai-compliance/records/{id}": {
+      "get": {
+        "tags": [
+          "Thai Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propertyId}/thai-compliance/records/{id}/amend": {
+      "post": {
+        "tags": [
+          "Thai Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmendComplianceRecordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propertyId}/thai-compliance/rs3/export": {
+      "get": {
+        "tags": [
+          "Thai Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propertyId}/thai-compliance/rs4/export": {
+      "get": {
+        "tags": [
+          "Thai Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propertyId}/thai-compliance/tm30/export": {
+      "get": {
+        "tags": [
+          "Thai Compliance"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propertyId}/email-settings": {
+      "get": {
+        "tags": [
+          "Email Settings"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Email Settings"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propertyId}/email-settings/send-daily-report": {
+      "post": {
+        "tags": [
+          "Email Settings"
+        ],
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/book/{propId}/availability": {
+      "get": {
+        "tags": [
+          "Public Booking Engine"
+        ],
+        "operationId": "GetPublicAvailability",
+        "parameters": [
+          {
+            "name": "propId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "checkIn",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "checkOut",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "adults",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "children",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/book/{propId}/validate-coupon": {
+      "post": {
+        "tags": [
+          "Public Booking Engine"
+        ],
+        "operationId": "ValidatePublicCoupon",
+        "parameters": [
+          {
+            "name": "propId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicValidateCouponRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/book/{propId}/hold": {
+      "post": {
+        "tags": [
+          "Public Booking Engine"
+        ],
+        "operationId": "CreateBookingHold",
+        "parameters": [
+          {
+            "name": "propId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHoldRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/book/{propId}/hold/{token}": {
+      "delete": {
+        "tags": [
+          "Public Booking Engine"
+        ],
+        "operationId": "ReleaseBookingHold",
+        "parameters": [
+          {
+            "name": "propId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/book/{propId}/reservations": {
+      "post": {
+        "tags": [
+          "Public Booking Engine"
+        ],
+        "operationId": "CreatePublicReservation",
+        "parameters": [
+          {
+            "name": "propId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePublicReservationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{propId}/booking-engine/settings": {
+      "get": {
+        "tags": [
+          "Booking Engine"
+        ],
+        "operationId": "GetBookingEngineSettings",
+        "parameters": [
+          {
+            "name": "propId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Booking Engine"
+        ],
+        "operationId": "UpdateBookingEngineSettings",
+        "parameters": [
+          {
+            "name": "propId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBookingEngineSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6565,6 +7199,59 @@
           "reservationId": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "AmendComplianceRecordRequest": {
+        "required": [
+          "reason",
+          "newNationalId",
+          "newPassportNumber",
+          "newNationality",
+          "newDateOfBirth",
+          "newVisaType",
+          "newCountryOfOrigin"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "newNationalId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newPassportNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newNationality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newDateOfBirth": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newVisaType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newCountryOfOrigin": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -7108,6 +7795,76 @@
           }
         }
       },
+      "CreateComplianceRecordRequest": {
+        "required": [
+          "reservationId",
+          "guestId",
+          "guestFullName",
+          "nationalId",
+          "passportNumber",
+          "nationality",
+          "dateOfBirth",
+          "visaType",
+          "countryOfOrigin",
+          "roomNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "reservationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "guestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "guestFullName": {
+            "type": "string"
+          },
+          "nationalId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "passportNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nationality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dateOfBirth": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "visaType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "countryOfOrigin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "roomNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "CreateCouponRequest": {
         "required": [
           "code",
@@ -7315,6 +8072,69 @@
               "null",
               "string"
             ]
+          },
+          "dateOfBirth": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "visaType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "countryOfOrigin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CreateHoldRequest": {
+        "required": [
+          "roomTypeId",
+          "checkInDate",
+          "checkOutDate",
+          "adults",
+          "children",
+          "guestEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "roomTypeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "checkInDate": {
+            "type": "string"
+          },
+          "checkOutDate": {
+            "type": "string"
+          },
+          "adults": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "children": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "guestEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -7460,6 +8280,72 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "CreatePublicReservationRequest": {
+        "required": [
+          "holdToken",
+          "guestName",
+          "guestEmail",
+          "guestPhone",
+          "guestNationality",
+          "guestNationalId",
+          "guestPassportNumber",
+          "couponCode",
+          "specialRequests",
+          "policyAcknowledged"
+        ],
+        "type": "object",
+        "properties": {
+          "holdToken": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "guestName": {
+            "type": "string"
+          },
+          "guestEmail": {
+            "type": "string"
+          },
+          "guestPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "guestNationality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "guestNationalId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "guestPassportNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "couponCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "specialRequests": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "policyAcknowledged": {
+            "type": "boolean"
           }
         }
       },
@@ -8167,6 +9053,17 @@
           }
         }
       },
+      "EnableThaiComplianceRequest": {
+        "required": [
+          "enable"
+        ],
+        "type": "object",
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          }
+        }
+      },
       "FloorDto": {
         "required": [
           "id",
@@ -8386,7 +9283,10 @@
           "notes",
           "isActive",
           "createdAtUtc",
-          "updatedAtUtc"
+          "updatedAtUtc",
+          "dateOfBirth",
+          "visaType",
+          "countryOfOrigin"
         ],
         "type": "object",
         "properties": {
@@ -8450,6 +9350,24 @@
               "string"
             ],
             "format": "date-time"
+          },
+          "dateOfBirth": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "visaType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "countryOfOrigin": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -9477,6 +10395,42 @@
           "Apartment",
           "Hybrid"
         ]
+      },
+      "PublicValidateCouponRequest": {
+        "required": [
+          "couponCode",
+          "baseAmount",
+          "checkInDate",
+          "checkOutDate",
+          "roomTypeId"
+        ],
+        "type": "object",
+        "properties": {
+          "couponCode": {
+            "type": "string"
+          },
+          "baseAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "checkInDate": {
+            "type": "string"
+          },
+          "checkOutDate": {
+            "type": "string"
+          },
+          "roomTypeId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
       },
       "RatePlanRestrictionRequest": {
         "required": [
@@ -10776,6 +11730,48 @@
           }
         }
       },
+      "UpdateBookingEngineSettingsRequest": {
+        "required": [
+          "isEnabled",
+          "holdDurationMinutes",
+          "bookingPolicyText",
+          "minAdvanceBookingDays",
+          "maxAdvanceBookingDays"
+        ],
+        "type": "object",
+        "properties": {
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "holdDurationMinutes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "bookingPolicyText": {
+            "type": "string"
+          },
+          "minAdvanceBookingDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxAdvanceBookingDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "UpdateBrandingRequest": {
         "required": [
           "propertyId",
@@ -10884,6 +11880,34 @@
           }
         }
       },
+      "UpdateEmailSettingsRequest": {
+        "required": [
+          "sendBookingConfirmation",
+          "sendDailyReport",
+          "dailyReportRecipients",
+          "dailyReportSendHourUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "sendBookingConfirmation": {
+            "type": "boolean"
+          },
+          "sendDailyReport": {
+            "type": "boolean"
+          },
+          "dailyReportRecipients": {
+            "type": "string"
+          },
+          "dailyReportSendHourUtc": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "UpdateGuestRequest": {
         "required": [
           "fullName",
@@ -10930,6 +11954,24 @@
             ]
           },
           "notes": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dateOfBirth": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "visaType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "countryOfOrigin": {
             "type": [
               "null",
               "string"
@@ -11596,6 +12638,18 @@
     },
     {
       "name": "Quotations"
+    },
+    {
+      "name": "Thai Compliance"
+    },
+    {
+      "name": "Email Settings"
+    },
+    {
+      "name": "Public Booking Engine"
+    },
+    {
+      "name": "Booking Engine"
     }
   ]
 }

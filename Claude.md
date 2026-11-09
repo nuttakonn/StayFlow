@@ -7,7 +7,7 @@
 > connecting to OTAs (Agoda, Booking.com, Traveloka, Trip.com) through
 > third-party channel managers (STAAH, SiteMinder).
 >
-> **Status:** Core hotel & apartment modules implemented. EF Core migrations complete. Channel manager, rate management, ancillary services, Thai compliance (M11), and email automation (M12) complete. Direct booking engine planned for M13.\
+> **Status:** Core hotel & apartment modules implemented. EF Core migrations complete. Channel manager, rate management, ancillary services, Thai compliance (M11), email automation (M12), and direct booking engine (M13) complete. Security hardening, UAT, and pilot hotel go-live planned for M14.\
 > **Primary instruction file:** `Claude.md`\
 > **Important:** Production-ready is an engineering target, not a claim
 > that the system is safe to launch without completing the release
@@ -1411,7 +1411,7 @@ decisions, and acceptance criteria.
   M10.5       ✅ Complete      Ancillary services (ServiceItem CRUD), meal packages (Package + PackageItem with MealPlanType), quotations (create/convert-to-reservation/cancel, duplicate-convert guard), ADR + RevPAR KPI endpoint, occupancy and revenue XLSX export (ClosedXML), 15 integration tests (Phase10_5Tests)
   M11         ✅ Complete      Thai compliance: Guest extended (DateOfBirth/VisaType/CountryOfOrigin), Property.EnableThaiCompliance flag, ThaiComplianceRecord (immutable per-stay snapshot) + ThaiComplianceAmendment (before/after audit), R.S.3/R.S.4/TM.30 Excel exports (ClosedXML, Thai-language headers), one record per reservation (409 guard), foreignersOnly filter for TM.30, EF migration (AddThaiCompliance), 13 integration tests (Phase11ThaiComplianceTests) — 140/140 total tests pass
   M12         ✅ Complete      Email automation: IEmailService + EmailOptions (SmtpEmailService/NullEmailService), EmailTemplates (booking confirmation + daily digest HTML+text), EmailNotificationSettings per property (enable/disable confirmation, daily report recipients + UTC send hour), booking confirmation sent on ReservationConfirm (synchronous, exception-swallowed), DailyReportBackgroundService (hourly tick + manual trigger endpoint), EF migration (AddEmailNotificationSettings), NullEmailService injected in test factory for capture assertions, 9 integration tests (Phase12EmailNotificationTests) — 149/149 total tests pass
-  M13         📋 Planned       Direct booking engine (customer-facing web page)
+  M13         ✅ Complete      Direct booking engine: BookingEngineSettings (IsEnabled/HoldDurationMinutes/advance-window), BookingHold (server-side timer lock with SessionToken/ExpiresAt/HoldStatus), public endpoints (GET availability with public-rate filtering, POST validate-coupon, POST hold, DELETE hold, POST reservations), BookingHoldCleanupService (5-min background expiry), "booking" rate limiter (60/min per IP), EF migration (AddBookingEngine), InvariantCulture date parsing (th-TH locale fix), 12 integration tests (Phase13BookingEngineTests) — 161/161 total tests pass
   M14         📋 Planned       Security hardening, UAT, pilot hotel go-live
 
 **Deployment strategy:** On-premise is the primary commercial model.

@@ -20,7 +20,8 @@ public enum ReservationSource
     Email = 3,
     Online = 4,
     OTA = 5,
-    Other = 6
+    Other = 6,
+    BookingEngine = 7
 }
 
 public class Reservation : PropertyEntity<Guid>

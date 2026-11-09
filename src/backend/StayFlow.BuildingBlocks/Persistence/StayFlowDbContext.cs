@@ -7,6 +7,7 @@ using StayFlow.BuildingBlocks.Domain.ChannelManager;
 using StayFlow.BuildingBlocks.Domain.Apartments;
 using StayFlow.BuildingBlocks.Domain.Rates;
 using StayFlow.BuildingBlocks.Domain.Services;
+using StayFlow.BuildingBlocks.Domain.BookingEngine;
 using StayFlow.BuildingBlocks.Domain.Notifications;
 using StayFlow.BuildingBlocks.Domain.ThaiCompliance;
 using StayFlow.BuildingBlocks.Domain.Billing;
@@ -94,6 +95,10 @@ public class StayFlowDbContext : DbContext
 
     // M12: Email Notification Settings
     public DbSet<EmailNotificationSettings> EmailNotificationSettings => Set<EmailNotificationSettings>();
+
+    // M13: Direct Booking Engine
+    public DbSet<BookingHold> BookingHolds => Set<BookingHold>();
+    public DbSet<BookingEngineSettings> BookingEngineSettings => Set<BookingEngineSettings>();
 
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<PlanEntitlement> PlanEntitlements => Set<PlanEntitlement>();
@@ -810,6 +815,28 @@ public class StayFlowDbContext : DbContext
             b.Property(x => x.DailyReportRecipients).HasMaxLength(2000).IsRequired();
             b.HasIndex(x => x.PropertyId).IsUnique(); // one record per property
             b.HasIndex(x => x.OrganizationId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        // ── M13: Direct Booking Engine ────────────────────────────────────────
+        modelBuilder.Entity<BookingEngineSettings>(b =>
+        {
+            b.ToTable("booking_engine_settings");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.BookingPolicyText).HasMaxLength(4000);
+            b.HasIndex(x => x.PropertyId).IsUnique(); // one record per property
+            b.HasIndex(x => x.OrganizationId);
+            b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
+        });
+
+        modelBuilder.Entity<BookingHold>(b =>
+        {
+            b.ToTable("booking_holds");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => x.SessionToken).IsUnique();
+            b.HasIndex(x => new { x.PropertyId, x.RoomTypeId, x.Status });
+            b.HasIndex(x => x.ExpiresAtUtc);
+            b.Property(x => x.GuestEmail).HasMaxLength(255);
             b.HasQueryFilter(x => !_tenantContext!.OrganizationId.HasValue || x.OrganizationId == _tenantContext.OrganizationId.Value);
         });
     }

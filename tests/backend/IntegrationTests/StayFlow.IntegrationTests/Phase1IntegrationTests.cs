@@ -35,6 +35,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         // assertion. Rate-limiting behaviour itself is covered separately.
         builder.UseSetting("RateLimiting:AuthPermitLimit", "100000");
         builder.UseSetting("RateLimiting:ApiPermitLimit", "100000");
+        builder.UseSetting("RateLimiting:BookingPermitLimit", "100000");
 
         builder.ConfigureServices(services =>
         {

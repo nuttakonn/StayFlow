@@ -77,6 +77,8 @@ else
 
 // Background job: sends daily property digest emails at the per-property UTC hour
 builder.Services.AddHostedService<DailyReportBackgroundService>();
+// Background job: marks expired booking holds every 5 minutes
+builder.Services.AddHostedService<BookingHoldCleanupService>();
 
 // Channel Manager Providers (one implementation per OTA channel manager)
 builder.Services.AddHttpClient();
@@ -156,6 +158,19 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 QueueLimit = 5
+            }));
+
+    // Public booking engine endpoints: tighter per-IP limit to protect against
+    // inventory probing and hold-spam attacks.
+    options.AddPolicy("booking", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            RateLimitPartitionKey.ForClient(httpContext.Connection.RemoteIpAddress),
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = builder.Configuration.GetValue<int?>("RateLimiting:BookingPermitLimit") ?? 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
             }));
 
     options.RejectionStatusCode = 429;
@@ -447,6 +462,10 @@ app.MapPackageEndpoints();
 app.MapQuotationEndpoints();
 app.MapThaiComplianceEndpoints();
 app.MapEmailSettingsEndpoints();
+
+// M13: Direct Booking Engine
+app.MapBookingEnginePublicEndpoints();
+app.MapBookingEngineSettingsEndpoints();
 
 app.Run();
 
