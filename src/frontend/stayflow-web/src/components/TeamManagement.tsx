@@ -4,7 +4,7 @@ import {
   Users, UserPlus, Trash2, Shield, ChevronDown, ChevronUp,
   CheckCircle2, AlertCircle, Crown, RefreshCw, Building2, Plus, X
 } from 'lucide-react';
-import { fetchWithAuth, getStoredSession } from '../lib/api';
+import { fetchWithAuth, getStoredSession, API_BASE } from '../lib/api';
 
 interface PropertyAssignment {
   propertyMembershipId: string;
@@ -63,7 +63,7 @@ export function TeamManagement() {
     setSessionStale(true);
     setRecovering(true);
     try {
-      const r = await fetch('/api/v1/auth/quick-demo', { method: 'POST' });
+      const r = await fetch(API_BASE + '/api/v1/auth/quick-demo', { method: 'POST' });
       if (r.ok) {
         const auth = await r.json();
         localStorage.setItem('stayflow_auth_token', auth.accessToken);

@@ -1,3 +1,7 @@
+// In production (Vercel) set VITE_API_BASE_URL=https://your-app.onrender.com
+// In development leave it unset — Vite proxy handles /api → localhost:5090
+export const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+
 const TOKEN_KEY = 'stayflow_auth_token';
 const ORG_KEY = 'stayflow_active_org_id';
 const USER_KEY = 'stayflow_user';
@@ -65,7 +69,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
     headers.set('X-Organization-Id', session.organizationId);
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(API_BASE + url, {
     ...options,
     headers,
   });
@@ -88,7 +92,7 @@ export async function apiFetch<T = unknown>(
   headers.set('Authorization', `Bearer ${token}`);
   headers.set('X-Organization-Id', orgId);
 
-  const response = await fetch(url, { ...options, headers });
+  const response = await fetch(API_BASE + url, { ...options, headers });
 
   if (!response.ok) {
     let msg = `HTTP ${response.status}`;

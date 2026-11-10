@@ -1,0 +1,17 @@
+**/.git
+**/.gitignore
+**/node_modules
+**/dist
+**/*.user
+**/.vs
+**/.idea
+**/bin
+**/obj
+**/TestResults
+tests/
+docs/
+deploy/
+postman/
+src/frontend/
+*.md
+.env*

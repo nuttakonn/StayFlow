@@ -37,7 +37,7 @@ import { HousekeepingView } from './components/HousekeepingView';
 import { MaintenanceView } from './components/MaintenanceView';
 import { SettingsPage } from './components/SettingsPage';
 import LanguageSwitcher from './components/LanguageSwitcher';
-import { fetchWithAuth, getStoredSession, saveSession, updateStoredLanguage } from './lib/api';
+import { fetchWithAuth, getStoredSession, saveSession, updateStoredLanguage, API_BASE } from './lib/api';
 import i18nSingleton, { isSupportedLanguage } from './i18n';
 
 export function App() {
@@ -141,7 +141,7 @@ export function App() {
   const triggerQuickDemo = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/v1/auth/quick-demo', { method: 'POST' });
+      const res = await fetch(API_BASE + '/api/v1/auth/quick-demo', { method: 'POST' });
       if (res.ok) {
         const auth = await res.json();
         saveSession(auth.accessToken, auth.refreshToken, auth.activeOrganizationId, auth.user);

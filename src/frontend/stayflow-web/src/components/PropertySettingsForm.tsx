@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, MapPin, Clock, Building2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { PropertyDto } from '../types';
-import { fetchWithAuth } from '../lib/api';
+import { fetchWithAuth, API_BASE } from '../lib/api';
 
 interface PropertySettingsFormProps {
   property: PropertyDto;
@@ -42,7 +42,7 @@ export function PropertySettingsForm({ property, onUpdated }: PropertySettingsFo
     setSessionExpired(true);
     setRecovering(true);
     try {
-      const r = await fetch('/api/v1/auth/quick-demo', { method: 'POST' });
+      const r = await fetch(API_BASE + '/api/v1/auth/quick-demo', { method: 'POST' });
       if (r.ok) {
         const auth = await r.json();
         localStorage.setItem('stayflow_auth_token', auth.accessToken);

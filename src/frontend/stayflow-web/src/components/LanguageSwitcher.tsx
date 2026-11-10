@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Languages, Check, X } from 'lucide-react';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
-import { getStoredSession, updateStoredLanguage } from '../lib/api';
+import { getStoredSession, updateStoredLanguage, API_BASE } from '../lib/api';
 
 const FLAG: Record<SupportedLanguage, string> = {
   en: '🇬🇧',
@@ -44,7 +44,7 @@ export default function LanguageSwitcher() {
     if (!session?.token) return;
 
     try {
-      const response = await fetch('/api/v1/auth/me/language', {
+      const response = await fetch(API_BASE + '/api/v1/auth/me/language', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
