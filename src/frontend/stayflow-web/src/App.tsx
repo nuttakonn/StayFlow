@@ -37,11 +37,13 @@ import { HousekeepingView } from './components/HousekeepingView';
 import { MaintenanceView } from './components/MaintenanceView';
 import { SettingsPage } from './components/SettingsPage';
 import LanguageSwitcher from './components/LanguageSwitcher';
-import { fetchWithAuth, getStoredSession, saveSession, updateStoredLanguage, API_BASE } from './lib/api';
+import { fetchWithAuth, getStoredSession, saveSession, clearSession, updateStoredLanguage, API_BASE, UserSession } from './lib/api';
+import { LoginPage } from './components/LoginPage';
 import i18nSingleton, { isSupportedLanguage } from './i18n';
 
 export function App() {
   const { t } = useTranslation();
+  const [session, setSession] = useState<UserSession | null>(() => getStoredSession());
   const [activeProperty, setActiveProperty] = useState<PropertyDto | null>(null);
   const [properties, setProperties] = useState<PropertyDto[]>([]);
   const [rooms, setRooms] = useState<RoomDto[]>([]);
@@ -66,10 +68,11 @@ export function App() {
   const [newPropType, setNewPropType] = useState<number>(1);
   const [creatingProperty, setCreatingProperty] = useState(false);
 
-  // Initialize session and properties on mount
+  // Load properties when session becomes available
   useEffect(() => {
-    initializeOrFetchProperties();
-  }, []);
+    if (session) initializeOrFetchProperties();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.token]);
 
   // The account-level language preference wins over browser detection, so a
   // user's choice follows them to any device they sign in from.
@@ -107,29 +110,45 @@ export function App() {
     }
   };
 
+  const handleAuthenticated = async (auth: { accessToken: string; refreshToken: string; activeOrganizationId: string; user: UserSession['user'] }) => {
+    const newSession: UserSession = {
+      token: auth.accessToken,
+      refreshToken: auth.refreshToken,
+      organizationId: auth.activeOrganizationId,
+      user: auth.user,
+    };
+    // Preserve whatever language the user had selected before logging in
+    if (isSupportedLanguage(i18nSingleton.language)) {
+      updateStoredLanguage(i18nSingleton.language);
+    }
+    setSession(newSession);
+  };
+
+  const handleSignOut = () => {
+    clearSession();
+    setSession(null);
+    setProperties([]);
+    setActiveProperty(null);
+    setRooms([]);
+    setRoomTypes([]);
+    setBuildings([]);
+    setFloors([]);
+    setSummary(null);
+    setBranding(null);
+    setEntitlements(null);
+    setActiveTab('rooms');
+  };
+
   const initializeOrFetchProperties = async () => {
     setLoading(true);
     try {
-      const session = getStoredSession();
-      if (!session) {
-        // Auto-login with Demo setup on first load
-        await triggerQuickDemo();
-        return;
-      }
-
       const res = await fetchWithAuth('/api/v1/properties');
       if (res.ok) {
         const data: PropertyDto[] = await res.json();
         setProperties(data);
-        if (data.length > 0) {
-          setActiveProperty(data[0]);
-        } else {
-          // If no properties exist yet for this user, auto seed demo
-          await triggerQuickDemo();
-        }
+        if (data.length > 0) setActiveProperty(data[0]);
       } else if (res.status === 401) {
-        // Expired token -> auto refresh demo session
-        await triggerQuickDemo();
+        handleSignOut();
       }
     } catch (e) {
       console.error('Error fetching properties', e);
@@ -140,32 +159,15 @@ export function App() {
 
   const triggerQuickDemo = async () => {
     try {
-      setLoading(true);
       const res = await fetch(API_BASE + '/api/v1/auth/quick-demo', { method: 'POST' });
       if (res.ok) {
         const auth = await res.json();
         saveSession(auth.accessToken, auth.refreshToken, auth.activeOrganizationId, auth.user);
-        // A session refresh resets the server's default language ('en').
-        // Re-apply the user's current active language so the loading effect
-        // below does not revert a manual switch the user made this session.
-        if (isSupportedLanguage(i18nSingleton.language)) {
-          updateStoredLanguage(i18nSingleton.language);
-        }
-        
-        // Fetch properties with new token
-        const propRes = await fetchWithAuth('/api/v1/properties');
-        if (propRes.ok) {
-          const data: PropertyDto[] = await propRes.json();
-          setProperties(data);
-          if (data.length > 0) {
-            setActiveProperty(data[0]);
-          }
-        }
+        if (isSupportedLanguage(i18nSingleton.language)) updateStoredLanguage(i18nSingleton.language);
+        await initializeOrFetchProperties();
       }
     } catch (e) {
       console.error('Failed to trigger demo', e);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -261,6 +263,10 @@ export function App() {
     }
   };
 
+  if (!session) {
+    return <LoginPage onAuthenticated={handleAuthenticated} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col font-sans">
       {/* Top Navigation Bar */}
@@ -333,7 +339,7 @@ export function App() {
           )}
         </div>
 
-        {/* Right side: language switcher + demo button + hamburger */}
+        {/* Right side: language switcher + demo + user + sign-out + hamburger */}
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
           <button
@@ -344,6 +350,27 @@ export function App() {
             <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
             <span>{t('demo.loadSample')}</span>
           </button>
+
+          {/* User info + sign out */}
+          <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-200">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-black select-none">
+                {session.user.fullName?.charAt(0).toUpperCase() ?? '?'}
+              </div>
+              <div className="hidden lg:block leading-tight">
+                <p className="text-xs font-bold text-slate-800 max-w-[120px] truncate">{session.user.fullName}</p>
+                <p className="text-[10px] text-slate-400">{session.user.role ?? 'Owner'}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleSignOut}
+              title={t('auth.signOut')}
+              className="px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-red-50 hover:text-red-600 rounded-xl border border-slate-200 hover:border-red-200 transition t-button"
+            >
+              {t('auth.signOut')}
+            </button>
+          </div>
+
           <button
             onClick={() => setSidebarOpen((o) => !o)}
             className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 t-button"
@@ -461,9 +488,16 @@ export function App() {
               {navItem('guests', <Users className="w-4 h-4" />, t('nav.guests'), 'text-teal-600')}
               {navItem('overview', <Compass className="w-4 h-4" />, t('nav.overview'), 'text-blue-600')}
 
-              {/* Settings — pinned at the bottom */}
-              <div className="mt-auto pt-3 border-t border-slate-200">
+              {/* Settings + Sign Out — pinned at the bottom */}
+              <div className="mt-auto pt-3 border-t border-slate-200 space-y-1">
                 {navItem('settings', <Settings2 className="w-4 h-4" />, t('nav.settings'), 'text-slate-700')}
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                >
+                  <Users className="w-4 h-4" />
+                  <span>{t('auth.signOut')}</span>
+                </button>
               </div>
             </aside>
           );

@@ -859,5 +859,31 @@
     "statusCreated": "สร้างแล้ว",
     "statusDuplicate": "ซ้ำ",
     "statusFailed": "ล้มเหลว"
+  },
+  "auth": {
+    "signInTab": "เข้าสู่ระบบ",
+    "registerTab": "ลงทะเบียนองค์กร",
+    "emailLabel": "อีเมล",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "รหัสผ่าน",
+    "passwordPlaceholder": "••••••••",
+    "rememberMe": "จดจำฉัน",
+    "submitLogin": "เข้าสู่ระบบ",
+    "fullNameLabel": "ชื่อ-นามสกุล",
+    "fullNamePlaceholder": "เช่น สมชาย ใจดี",
+    "orgNameLabel": "ชื่อองค์กร",
+    "orgNamePlaceholder": "เช่น ABC Hotel Group",
+    "submitRegister": "สร้างบัญชี",
+    "quickDemo": "⚡ ทดลองใช้ (แอดมิน)",
+    "quickDemoHint": "โหลดข้อมูลโรงแรมตัวอย่างทันที — ไม่ต้องสมัครสมาชิก",
+    "signingIn": "กำลังเข้าสู่ระบบ…",
+    "registering": "กำลังสร้างบัญชี…",
+    "invalidCredentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+    "registerError": "การลงทะเบียนล้มเหลว กรุณาลองใหม่อีกครั้ง",
+    "signOut": "ออกจากระบบ",
+    "signedInAs": "เข้าสู่ระบบในฐานะ",
+    "welcomeTitle": "ยินดีต้อนรับกลับ",
+    "subtitle": "เข้าสู่ระบบจัดการอสังหาริมทรัพย์ของคุณ",
+    "orLabel": "หรือ"
   }
 }

@@ -859,5 +859,31 @@
     "statusCreated": "Created",
     "statusDuplicate": "Duplicate",
     "statusFailed": "Failed"
+  },
+  "auth": {
+    "signInTab": "Sign In",
+    "registerTab": "Register Organization",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "rememberMe": "Remember me",
+    "submitLogin": "Sign In",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "e.g. John Smith",
+    "orgNameLabel": "Organization Name",
+    "orgNamePlaceholder": "e.g. ABC Hotel Group",
+    "submitRegister": "Create Account",
+    "quickDemo": "⚡ Quick Demo (Admin)",
+    "quickDemoHint": "Load sample hotel data instantly — no account needed",
+    "signingIn": "Signing in…",
+    "registering": "Creating account…",
+    "invalidCredentials": "Invalid email or password.",
+    "registerError": "Registration failed. Please try again.",
+    "signOut": "Sign Out",
+    "signedInAs": "Signed in as",
+    "welcomeTitle": "Welcome back",
+    "subtitle": "Sign in to your property management system",
+    "orLabel": "or"
   }
 }

@@ -859,5 +859,31 @@
     "statusCreated": "已创建",
     "statusDuplicate": "重复",
     "statusFailed": "失败"
+  },
+  "auth": {
+    "signInTab": "登录",
+    "registerTab": "注册组织",
+    "emailLabel": "邮箱",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "密码",
+    "passwordPlaceholder": "••••••••",
+    "rememberMe": "记住我",
+    "submitLogin": "登录",
+    "fullNameLabel": "全名",
+    "fullNamePlaceholder": "例如：张三",
+    "orgNameLabel": "组织名称",
+    "orgNamePlaceholder": "例如：ABC酒店集团",
+    "submitRegister": "创建账户",
+    "quickDemo": "⚡ 快速演示（管理员）",
+    "quickDemoHint": "立即加载示例酒店数据 — 无需注册",
+    "signingIn": "登录中…",
+    "registering": "创建账户中…",
+    "invalidCredentials": "邮箱或密码无效",
+    "registerError": "注册失败，请重试",
+    "signOut": "退出登录",
+    "signedInAs": "已登录为",
+    "welcomeTitle": "欢迎回来",
+    "subtitle": "登录您的物业管理系统",
+    "orLabel": "或"
   }
 }

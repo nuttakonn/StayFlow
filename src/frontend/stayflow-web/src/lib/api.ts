@@ -15,6 +15,7 @@ export interface UserSession {
     email: string;
     fullName: string;
     preferredLanguage?: string;
+    role?: string;
   };
 }
 
