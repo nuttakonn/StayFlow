@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, Zap, Eye, EyeOff } from 'lucide-react';
+import { Building2, Zap, Eye, EyeOff, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { saveSession, API_BASE } from '../lib/api';
 import LanguageSwitcher from './LanguageSwitcher';
 
@@ -23,7 +23,7 @@ interface Props {
 
 export function LoginPage({ onAuthenticated }: Props) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'login' | 'register'>('login');
+  const [tab, setTab] = useState<'login' | 'register' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -33,6 +33,10 @@ export function LoginPage({ onAuthenticated }: Props) {
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Forgot password
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSent, setForgotSent] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +111,22 @@ export function LoginPage({ onAuthenticated }: Props) {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await fetch(API_BASE + '/api/v1/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      setForgotSent(true);
+    } catch { /* always show success to prevent enumeration */ } finally {
+      setLoading(false);
+    }
+  };
+
   const inputClass =
     'w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white placeholder-slate-400 transition';
 
@@ -129,29 +149,31 @@ export function LoginPage({ onAuthenticated }: Props) {
         </div>
 
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-          {/* Tabs */}
-          <div className="flex border-b border-slate-100">
-            <button
-              onClick={() => { setTab('login'); setError(''); }}
-              className={`flex-1 py-4 text-sm font-bold transition-colors ${
-                tab === 'login'
-                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              {t('auth.signInTab')}
-            </button>
-            <button
-              onClick={() => { setTab('register'); setError(''); }}
-              className={`flex-1 py-4 text-sm font-bold transition-colors ${
-                tab === 'register'
-                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              {t('auth.registerTab')}
-            </button>
-          </div>
+          {/* Tabs — hidden on forgot-password view */}
+          {tab !== 'forgot' && (
+            <div className="flex border-b border-slate-100">
+              <button
+                onClick={() => { setTab('login'); setError(''); }}
+                className={`flex-1 py-4 text-sm font-bold transition-colors ${
+                  tab === 'login'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                {t('auth.signInTab')}
+              </button>
+              <button
+                onClick={() => { setTab('register'); setError(''); }}
+                className={`flex-1 py-4 text-sm font-bold transition-colors ${
+                  tab === 'register'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                {t('auth.registerTab')}
+              </button>
+            </div>
+          )}
 
           <div className="p-7 space-y-5">
             {/* Error banner */}
@@ -198,17 +220,26 @@ export function LoginPage({ onAuthenticated }: Props) {
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="rememberMe"
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor="rememberMe" className="text-sm text-slate-600 cursor-pointer select-none">
-                    {t('auth.rememberMe')}
-                  </label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="rememberMe"
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor="rememberMe" className="text-sm text-slate-600 cursor-pointer select-none">
+                      {t('auth.rememberMe')}
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setTab('forgot'); setError(''); setForgotSent(false); setForgotEmail(email); }}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    {t('auth.forgotPasswordLink')}
+                  </button>
                 </div>
                 <button
                   type="submit"
@@ -218,6 +249,55 @@ export function LoginPage({ onAuthenticated }: Props) {
                   {loading ? t('auth.signingIn') : t('auth.submitLogin')}
                 </button>
               </form>
+            )}
+
+            {/* Forgot password panel */}
+            {tab === 'forgot' && (
+              <div className="space-y-4">
+                <button
+                  onClick={() => { setTab('login'); setError(''); setForgotSent(false); }}
+                  className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 font-medium"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  {t('auth.forgotPasswordBack')}
+                </button>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">{t('auth.forgotPasswordTitle')}</h3>
+                  <p className="text-sm text-slate-500 mt-1">{t('auth.forgotPasswordDesc')}</p>
+                </div>
+                {forgotSent ? (
+                  <div className="flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                    <p className="text-sm text-emerald-800">{t('auth.forgotPasswordSent')}</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">{t('auth.forgotPasswordEmailLabel')}</label>
+                      <div className="relative">
+                        <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          type="email"
+                          required
+                          autoFocus
+                          autoComplete="email"
+                          value={forgotEmail}
+                          onChange={(e) => setForgotEmail(e.target.value)}
+                          className={inputClass + ' pl-9'}
+                          placeholder="you@example.com"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 rounded-xl shadow-md transition"
+                    >
+                      {loading ? t('auth.forgotPasswordSending') : t('auth.forgotPasswordSubmit')}
+                    </button>
+                  </form>
+                )}
+              </div>
             )}
 
             {/* Register form */}
@@ -290,23 +370,25 @@ export function LoginPage({ onAuthenticated }: Props) {
               </form>
             )}
 
-            {/* Divider */}
-            <div className="relative flex items-center gap-3">
-              <div className="flex-1 border-t border-slate-200" />
-              <span className="text-xs text-slate-400 font-medium">{t('auth.orLabel')}</span>
-              <div className="flex-1 border-t border-slate-200" />
-            </div>
-
-            {/* Quick Demo button */}
-            <button
-              onClick={handleQuickDemo}
-              disabled={demoLoading}
-              className="w-full py-3 text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 disabled:opacity-60 border border-amber-200 rounded-xl flex items-center justify-center gap-2 transition"
-            >
-              <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-              {demoLoading ? '…' : t('auth.quickDemo')}
-            </button>
-            <p className="text-center text-[11px] text-slate-400">{t('auth.quickDemoHint')}</p>
+            {/* Divider + Quick Demo — only on login/register tabs */}
+            {tab !== 'forgot' && (
+              <>
+                <div className="relative flex items-center gap-3">
+                  <div className="flex-1 border-t border-slate-200" />
+                  <span className="text-xs text-slate-400 font-medium">{t('auth.orLabel')}</span>
+                  <div className="flex-1 border-t border-slate-200" />
+                </div>
+                <button
+                  onClick={handleQuickDemo}
+                  disabled={demoLoading}
+                  className="w-full py-3 text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 disabled:opacity-60 border border-amber-200 rounded-xl flex items-center justify-center gap-2 transition"
+                >
+                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  {demoLoading ? '…' : t('auth.quickDemo')}
+                </button>
+                <p className="text-center text-[11px] text-slate-400">{t('auth.quickDemoHint')}</p>
+              </>
+            )}
           </div>
         </div>
 

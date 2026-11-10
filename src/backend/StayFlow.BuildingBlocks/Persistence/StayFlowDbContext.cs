@@ -38,6 +38,7 @@ public class StayFlowDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
     public DbSet<PropertyMembership> PropertyMemberships => Set<PropertyMembership>();
@@ -130,6 +131,16 @@ public class StayFlowDbContext : DbContext
             b.ToTable("refresh_tokens");
             b.HasKey(r => r.Id);
             b.Property(r => r.Token).HasMaxLength(500).IsRequired();
+            b.HasIndex(r => r.Token).IsUnique();
+            b.HasIndex(r => r.UserId);
+        });
+
+        // PasswordResetToken
+        modelBuilder.Entity<PasswordResetToken>(b =>
+        {
+            b.ToTable("password_reset_tokens");
+            b.HasKey(r => r.Id);
+            b.Property(r => r.Token).HasMaxLength(128).IsRequired();
             b.HasIndex(r => r.Token).IsUnique();
             b.HasIndex(r => r.UserId);
         });

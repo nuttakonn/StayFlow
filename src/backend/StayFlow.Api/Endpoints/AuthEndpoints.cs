@@ -1,5 +1,7 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using StayFlow.BuildingBlocks.Email;
 using StayFlow.BuildingBlocks.Domain.Apartments;
 using StayFlow.BuildingBlocks.Domain.Authorization;
 using StayFlow.BuildingBlocks.Deployment;
@@ -45,6 +47,10 @@ public record UserDto(
 public record UpdateLanguageRequest(
     string Language
 );
+
+public record ForgotPasswordRequest(string Email);
+
+public record ResetPasswordRequest(string Token, string NewPassword);
 
 public record UserOrganizationDto(
     Guid OrganizationId,
@@ -108,6 +114,19 @@ public static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .RequireAuthorization();
+
+        group.MapPost("/forgot-password", ForgotPasswordAsync)
+            .WithName("ForgotPassword")
+            .WithSummary("Request a password-reset link by email (always returns 200 to prevent email enumeration)")
+            .Produces(StatusCodes.Status200OK)
+            .AllowAnonymous();
+
+        group.MapPost("/reset-password", ResetPasswordAsync)
+            .WithName("ResetPassword")
+            .WithSummary("Set a new password using a valid reset token")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .AllowAnonymous();
 
         return group;
     }
@@ -611,6 +630,72 @@ public static class AuthEndpoints
             permissions,
             orgList
         ));
+    }
+
+    private static async Task<IResult> ForgotPasswordAsync(
+        [FromBody] ForgotPasswordRequest request,
+        StayFlowDbContext dbContext,
+        IEmailService emailService,
+        Microsoft.Extensions.Configuration.IConfiguration configuration,
+        CancellationToken ct)
+    {
+        // Always return 200 — do not reveal whether the email exists
+        if (string.IsNullOrWhiteSpace(request.Email))
+            return Results.Ok(new { message = "If that email is registered, a reset link has been sent." });
+
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        var user = await dbContext.Users
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail && u.IsActive, ct);
+
+        if (user != null && emailService.IsConfigured)
+        {
+            var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            var resetToken = PasswordResetToken.Create(user.Id, rawToken);
+            dbContext.PasswordResetTokens.Add(resetToken);
+            await dbContext.SaveChangesAsync(ct);
+
+            var frontendBase = configuration["AppSettings:FrontendBaseUrl"]?.TrimEnd('/') ?? "";
+            var resetLink = $"{frontendBase}/reset-password?token={rawToken}";
+            var appName = configuration["AppSettings:AppName"] ?? "StayFlow PMS";
+
+            var email = EmailTemplates.PasswordResetEmail(user.Email, user.FullName, resetLink, appName);
+            try { await emailService.SendAsync(email, ct); }
+            catch { /* log in production — never surface to client */ }
+        }
+
+        return Results.Ok(new { message = "If that email is registered, a reset link has been sent." });
+    }
+
+    private static async Task<IResult> ResetPasswordAsync(
+        [FromBody] ResetPasswordRequest request,
+        StayFlowDbContext dbContext,
+        IPasswordHasher passwordHasher,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Token))
+            return Results.Problem("Reset token is required.", statusCode: StatusCodes.Status400BadRequest);
+
+        if (string.IsNullOrWhiteSpace(request.NewPassword) ||
+            request.NewPassword.Length < 8 ||
+            !request.NewPassword.Any(char.IsLetter) ||
+            !request.NewPassword.Any(char.IsDigit))
+            return Results.Problem("Password must be at least 8 characters and contain at least one letter and one digit.", statusCode: StatusCodes.Status400BadRequest);
+
+        var tokenRecord = await dbContext.PasswordResetTokens
+            .FirstOrDefaultAsync(t => t.Token == request.Token, ct);
+
+        if (tokenRecord == null || !tokenRecord.IsValid)
+            return Results.Problem("This reset link is invalid or has expired. Please request a new one.", statusCode: StatusCodes.Status400BadRequest);
+
+        var user = await dbContext.Users.FindAsync([tokenRecord.UserId], ct);
+        if (user == null || !user.IsActive)
+            return Results.Problem("User not found or inactive.", statusCode: StatusCodes.Status400BadRequest);
+
+        user.ChangePassword(passwordHasher.HashPassword(request.NewPassword));
+        tokenRecord.MarkUsed();
+        await dbContext.SaveChangesAsync(ct);
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult> GetCurrentUserAsync(

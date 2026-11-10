@@ -179,6 +179,53 @@ public static class EmailTemplates
         return new EmailMessage(toAddress, subject, html, text);
     }
 
+    public static EmailMessage PasswordResetEmail(
+        string toAddress,
+        string fullName,
+        string resetLink,
+        string appName = "StayFlow PMS")
+    {
+        var subject = $"Reset your password — {appName}";
+        var html = $"""
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="utf-8"/></head>
+            <body style="font-family:sans-serif;color:#222;max-width:600px;margin:0 auto;padding:24px">
+              <h2 style="color:#1a56a0">{Encode(appName)}</h2>
+              <h3>Reset your password</h3>
+              <p>Dear {Encode(fullName)},</p>
+              <p>We received a request to reset the password for your account. Click the button below to choose a new password.</p>
+              <p style="margin:24px 0">
+                <a href="{Encode(resetLink)}"
+                   style="display:inline-block;padding:12px 28px;background:#1a56a0;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:15px">
+                  Reset Password
+                </a>
+              </p>
+              <p style="font-size:13px;color:#555">Or copy and paste this link into your browser:</p>
+              <p style="font-size:13px;word-break:break-all"><a href="{Encode(resetLink)}">{Encode(resetLink)}</a></p>
+              <p style="font-size:13px;color:#888">This link expires in <strong>1 hour</strong>. If you did not request a password reset, you can safely ignore this email.</p>
+              <hr style="border:none;border-top:1px solid #ddd;margin:24px 0"/>
+              <p style="font-size:12px;color:#888">This is an automated message from {Encode(appName)}. Do not reply to this email.</p>
+            </body>
+            </html>
+            """;
+
+        var text = $"""
+            Reset your password — {appName}
+
+            Dear {fullName},
+
+            We received a request to reset the password for your account.
+
+            Click this link to reset your password (expires in 1 hour):
+            {resetLink}
+
+            If you did not request a password reset, ignore this email.
+            """;
+
+        return new EmailMessage(toAddress, subject, html, text);
+    }
+
     private static string Encode(string? s) =>
         System.Net.WebUtility.HtmlEncode(s ?? string.Empty);
 }

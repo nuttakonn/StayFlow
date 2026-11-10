@@ -111,6 +111,38 @@ public class User : Entity<Guid>
     }
 }
 
+public class PasswordResetToken : Entity<Guid>
+{
+    public Guid UserId { get; private set; }
+    public string Token { get; private set; } = string.Empty;
+    public DateTimeOffset ExpiresAtUtc { get; private set; }
+    public DateTimeOffset? UsedAtUtc { get; private set; }
+
+    public bool IsExpired => DateTimeOffset.UtcNow >= ExpiresAtUtc;
+    public bool IsUsed => UsedAtUtc.HasValue;
+    public bool IsValid => !IsExpired && !IsUsed;
+
+    private PasswordResetToken() { } // EF Core
+
+    public static PasswordResetToken Create(Guid userId, string token)
+    {
+        return new PasswordResetToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Token = token,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            ExpiresAtUtc = DateTimeOffset.UtcNow.AddHours(1)
+        };
+    }
+
+    public void MarkUsed()
+    {
+        UsedAtUtc = DateTimeOffset.UtcNow;
+        Touch();
+    }
+}
+
 public class RefreshToken : Entity<Guid>
 {
     public Guid UserId { get; private set; }

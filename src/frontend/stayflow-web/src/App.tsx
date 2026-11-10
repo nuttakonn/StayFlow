@@ -39,6 +39,7 @@ import { SettingsPage } from './components/SettingsPage';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { fetchWithAuth, getStoredSession, saveSession, clearSession, updateStoredLanguage, API_BASE, UserSession } from './lib/api';
 import { LoginPage } from './components/LoginPage';
+import { ResetPasswordPage } from './components/ResetPasswordPage';
 import i18nSingleton, { isSupportedLanguage } from './i18n';
 
 export function App() {
@@ -262,6 +263,18 @@ export function App() {
       setCreatingProperty(false);
     }
   };
+
+  // Handle /reset-password?token=xxx before the session gate so unauthenticated
+  // users can reach the page after clicking the email link.
+  const resetToken = new URLSearchParams(window.location.search).get('token');
+  if (window.location.pathname === '/reset-password' && resetToken) {
+    return (
+      <ResetPasswordPage
+        token={resetToken}
+        onBackToLogin={() => window.history.replaceState(null, '', '/')}
+      />
+    );
+  }
 
   if (!session) {
     return <LoginPage onAuthenticated={handleAuthenticated} />;
