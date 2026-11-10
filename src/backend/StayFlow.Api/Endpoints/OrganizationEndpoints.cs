@@ -19,7 +19,8 @@ public record CreateOrganizationRequest(
 public record AddMemberRequest(
     string Email,
     string FullName,
-    OrganizationRole Role
+    OrganizationRole Role,
+    string? Password = null
 );
 
 public record ChangeMemberRoleRequest(OrganizationRole NewRole);
@@ -295,9 +296,21 @@ public static class OrganizationEndpoints
         var targetUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail, ct);
         if (targetUser == null)
         {
-            // Create user with a secure random temporary password hash
-            var tempPassHash = passwordHasher.HashPassword(Guid.NewGuid().ToString("N"));
-            targetUser = User.Create(normalizedEmail, tempPassHash, request.FullName);
+            // Use admin-supplied password when provided; otherwise generate a random hash
+            // (admin must share the password out-of-band; a reset flow can be added later)
+            string passwordToHash;
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                if (request.Password.Length < 8 || !request.Password.Any(char.IsLetter) || !request.Password.Any(char.IsDigit))
+                    return Results.Problem("Password must be at least 8 characters and contain at least one letter and one digit.", statusCode: StatusCodes.Status400BadRequest);
+                passwordToHash = request.Password;
+            }
+            else
+            {
+                passwordToHash = Guid.NewGuid().ToString("N") + "Aa1";
+            }
+            var passHash = passwordHasher.HashPassword(passwordToHash);
+            targetUser = User.Create(normalizedEmail, passHash, request.FullName);
             dbContext.Users.Add(targetUser);
             await dbContext.SaveChangesAsync(ct);
         }

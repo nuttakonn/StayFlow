@@ -736,7 +736,10 @@
     "roleLegendStaff": "Must be assigned to specific properties",
     "roleLegendViewer": "Must be assigned to specific properties — read only",
     "propertyNote": "Owner and Admin access all properties automatically. Other roles must be assigned to specific properties.",
-    "removeFromOrg": "Remove from team"
+    "removeFromOrg": "Remove from team",
+    "tempPasswordLabel": "Initial Password",
+    "tempPasswordPlaceholder": "Min 8 chars, 1 letter + 1 digit",
+    "tempPasswordHint": "Share this password with the employee so they can log in."
   },
   "settings": {
     "title": "Settings",

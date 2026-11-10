@@ -52,6 +52,7 @@ export function TeamManagement() {
   const [newEmail, setNewEmail] = useState('');
   const [newName, setNewName] = useState('');
   const [newRole, setNewRole] = useState('Staff');
+  const [newPassword, setNewPassword] = useState('');
   const [adding, setAdding] = useState(false);
 
   // Role change
@@ -199,11 +200,11 @@ export function TeamManagement() {
       const res = await fetchWithAuth(`/api/v1/organizations/${orgId}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: newEmail, fullName: newName, role: newRole }),
+        body: JSON.stringify({ email: newEmail, fullName: newName, role: newRole, password: newPassword || undefined }),
       });
       if (res.ok) {
         setSuccess(t('team.addSuccess', { name: newName || newEmail }));
-        setNewEmail(''); setNewName(''); setNewRole('Staff');
+        setNewEmail(''); setNewName(''); setNewRole('Staff'); setNewPassword('');
         setShowAddForm(false);
         await loadMembers();
         setTimeout(() => setSuccess(null), 4000);
@@ -357,6 +358,18 @@ export function TeamManagement() {
                   <option key={r} value={r}>{ROLE_LABEL[r]} ({r})</option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-600 block mb-1">{t('team.tempPasswordLabel')}</label>
+              <input
+                type="password"
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full max-w-sm px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 bg-white"
+                placeholder={t('team.tempPasswordPlaceholder')}
+              />
+              <p className="text-[11px] text-amber-600 mt-1">{t('team.tempPasswordHint')}</p>
             </div>
             <div className="flex gap-2">
               <button
