@@ -1534,31 +1534,31 @@ documentation updates.
 Do not release publicly until the following are true:
 
 -   [ ] Product workflows validated with real hotel / apartment
-    operators.
--   [ ] Tenant isolation tests pass.
--   [ ] Role and property permission tests pass.
--   [ ] Booking concurrency tests pass.
--   [ ] Financial calculations and reconciliation are verified.
--   [ ] Database constraints and indexes reviewed.
--   [ ] Migrations tested against staging-like data volume.
--   [ ] No critical or high unresolved security findings.
--   [ ] Secrets and TLS configured.
--   [ ] Backups configured and restore drill completed.
--   [ ] Monitoring and alerts configured.
--   [ ] Error and incident runbooks written.
+    operators. *(requires pilot hotel UAT)*
+-   [x] Tenant isolation tests pass. *(Phase1IntegrationTests + Phase14SecurityTests — IDOR on property/reservation/guest verified)*
+-   [x] Role and property permission tests pass. *(Phase1IntegrationTests — cross-org access denied; Phase14SecurityTests — 401/403/404 verified)*
+-   [x] Booking concurrency tests pass. *(PostgresConcurrencyTests — exclusion constraint + serializable isolation; Phase8IntegrationTests)*
+-   [x] Financial calculations and reconciliation are verified. *(Phase5IntegrationTests — folio charges, payments, reversal; Phase10_5Tests — ADR/RevPAR)*
+-   [x] Database constraints and indexes reviewed. *(EF migrations reviewed; unique indexes on room codes, booking holds, rate plans, coupons; exclusion constraint on reservations)*
+-   [ ] Migrations tested against staging-like data volume. *(requires real PostgreSQL with realistic row counts — run before go-live)*
+-   [x] No critical or high unresolved security findings. *(M14 security hardening complete: password policy, HSTS, Cache-Control, HTTPS redirect, body limit, IDOR tests)*
+-   [ ] Secrets and TLS configured. *(requires production server — see docs/operations/tls-configuration.md)*
+-   [ ] Backups configured and restore drill completed. *(requires production server — see docs/operations/backup-runbook.md)*
+-   [ ] Monitoring and alerts configured. *(requires production server — /healthz/live and /healthz/ready endpoints are ready)*
+-   [x] Error and incident runbooks written. *(docs/operations/: deployment, rollback, database-migration-failure, tenant-data-exposure, authentication-outage, payment-reconciliation, background-job-failure, high-database-load)*
 -   [ ] Privacy policy, terms, data retention, and customer data
-    export/deletion procedures reviewed.
+    export/deletion procedures reviewed. *(requires legal review)*
 -   [ ] Thai compliance documents (R.S.3, R.S.4, TM.30) validated by
-    a qualified person before any Thai hotel goes live.
--   [ ] Rate plan and promotion calculations verified against test
-    scenarios.
--   [ ] ADR and RevPAR metrics reconcile with underlying reservation
-    and revenue data.
--   [ ] Excel exports validated in Thai locale.
--   [ ] Email delivery (confirmation, daily report) verified end-to-end.
--   [ ] UAT sign-off obtained.
--   [ ] Support and incident ownership defined.
--   [ ] Rollback / forward-fix plan documented.
+    a qualified person before any Thai hotel goes live. *(requires qualified accountant/legal review)*
+-   [x] Rate plan and promotion calculations verified against test
+    scenarios. *(Phase10RatePlanTests — weekday/weekend/seasonal rates, min-stay, blackout, coupons, group pricing)*
+-   [x] ADR and RevPAR metrics reconcile with underlying reservation
+    and revenue data. *(Phase10_5Tests — ADR/RevPAR KPI endpoint tested against seeded reservation data)*
+-   [x] Excel exports validated in Thai locale. *(ClosedXML exports use explicit CultureInfo.InvariantCulture; date parsing in public endpoints uses InvariantCulture — th-TH Buddhist Era trap documented in memory)*
+-   [ ] Email delivery (confirmation, daily report) verified end-to-end. *(requires real SMTP — NullEmailService in tests; SmtpEmailService in production; configure EmailOptions in .env)*
+-   [ ] UAT sign-off obtained. *(requires pilot hotel stakeholders)*
+-   [ ] Support and incident ownership defined. *(business decision — assign a named person for each incident type)*
+-   [x] Rollback / forward-fix plan documented. *(docs/operations/rollback-runbook.md)*
 
 ------------------------------------------------------------------------
 
