@@ -25,6 +25,8 @@ public record AddMemberRequest(
 
 public record ChangeMemberRoleRequest(OrganizationRole NewRole);
 
+public record ResetMemberPasswordRequest(string NewPassword);
+
 public record OrganizationDetailDto(
     Guid Id,
     string Name,
@@ -88,6 +90,15 @@ public static class OrganizationEndpoints
             .WithSummary("Change a member's role (Requires Owner/Admin; Owner cannot be demoted by Admin)")
             .Produces<OrganizationMemberDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status403Forbidden)
+            .RequireAuthorization();
+
+        group.MapPost("/{id:guid}/members/{memberId:guid}/reset-password", ResetMemberPasswordAsync)
+            .WithName("ResetMemberPassword")
+            .WithSummary("Reset a member's password (Owner/Admin only; cannot reset another Owner)")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization();
 
         group.MapDelete("/{id:guid}/members/{memberId:guid}", RemoveMemberAsync)
@@ -506,6 +517,47 @@ public static class OrganizationEndpoints
         if (pm == null) return Results.NotFound();
 
         dbContext.PropertyMemberships.Remove(pm);
+        await dbContext.SaveChangesAsync(ct);
+
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> ResetMemberPasswordAsync(
+        Guid id,
+        Guid memberId,
+        [FromBody] ResetMemberPasswordRequest request,
+        StayFlowDbContext dbContext,
+        ITenantContext tenantContext,
+        IPasswordHasher passwordHasher,
+        CancellationToken ct)
+    {
+        if (!tenantContext.UserId.HasValue) return Results.Unauthorized();
+
+        var callerMembership = await dbContext.OrganizationMemberships
+            .FirstOrDefaultAsync(m => m.OrganizationId == id && m.UserId == tenantContext.UserId.Value, ct);
+
+        if (callerMembership == null || callerMembership.Role is not (OrganizationRole.Owner or OrganizationRole.Admin))
+            return Results.Problem("Only Owners or Admins can reset member passwords.", statusCode: StatusCodes.Status403Forbidden);
+
+        var target = await dbContext.OrganizationMemberships
+            .FirstOrDefaultAsync(m => m.Id == memberId && m.OrganizationId == id, ct);
+
+        if (target == null) return Results.NotFound();
+
+        // Admin cannot reset Owner's password
+        if (target.Role == OrganizationRole.Owner && callerMembership.Role != OrganizationRole.Owner)
+            return Results.Problem("Only an Owner can reset another Owner's password.", statusCode: StatusCodes.Status403Forbidden);
+
+        if (string.IsNullOrWhiteSpace(request.NewPassword) ||
+            request.NewPassword.Length < 8 ||
+            !request.NewPassword.Any(char.IsLetter) ||
+            !request.NewPassword.Any(char.IsDigit))
+            return Results.Problem("Password must be at least 8 characters and contain at least one letter and one digit.", statusCode: StatusCodes.Status400BadRequest);
+
+        var targetUser = await dbContext.Users.FindAsync([target.UserId], ct);
+        if (targetUser == null) return Results.NotFound();
+
+        targetUser.ChangePassword(passwordHasher.HashPassword(request.NewPassword));
         await dbContext.SaveChangesAsync(ct);
 
         return Results.NoContent();

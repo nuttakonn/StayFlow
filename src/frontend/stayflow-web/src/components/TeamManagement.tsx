@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Users, UserPlus, Trash2, Shield, ChevronDown, ChevronUp,
-  CheckCircle2, AlertCircle, Crown, RefreshCw, Building2, Plus, X
+  CheckCircle2, AlertCircle, Crown, RefreshCw, Building2, Plus, X, KeyRound
 } from 'lucide-react';
 import { fetchWithAuth, getStoredSession, API_BASE } from '../lib/api';
 
@@ -79,6 +79,11 @@ export function TeamManagement() {
   // Remove confirm
   const [confirmRemove, setConfirmRemove] = useState<Member | null>(null);
   const [removing, setRemoving] = useState(false);
+
+  // Reset password
+  const [resetPasswordFor, setResetPasswordFor] = useState<Member | null>(null);
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetting, setResetting] = useState(false);
 
   // Property assignments
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
@@ -269,6 +274,35 @@ export function TeamManagement() {
       }
     } finally {
       setRemoving(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!orgId || !resetPasswordFor) return;
+    setResetting(true);
+    setError(null);
+    try {
+      const res = await fetchWithAuth(
+        `/api/v1/organizations/${orgId}/members/${resetPasswordFor.membershipId}/reset-password`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newPassword: resetPassword }),
+        }
+      );
+      if (res.ok || res.status === 204) {
+        setSuccess(t('team.resetPasswordSuccess', { name: resetPasswordFor.fullName }));
+        setResetPasswordFor(null);
+        setResetPassword('');
+        setTimeout(() => setSuccess(null), 4000);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setError(err?.detail ?? t('team.resetPasswordError'));
+      }
+    } catch {
+      setError(t('team.loadError2'));
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -467,13 +501,22 @@ export function TeamManagement() {
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       {m.role !== 'Owner' && (
-                        <button
-                          onClick={() => setConfirmRemove(m)}
-                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                          title={t('team.removeFromOrg')}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => { setResetPasswordFor(m); setResetPassword(''); }}
+                            className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                            title={t('team.resetPasswordBtn')}
+                          >
+                            <KeyRound className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setConfirmRemove(m)}
+                            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                            title={t('team.removeFromOrg')}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -587,6 +630,52 @@ export function TeamManagement() {
           </p>
         </div>
       </div>
+
+      {/* Reset password dialog */}
+      {resetPasswordFor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                <KeyRound className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-black text-slate-900">{t('team.resetPasswordTitle')}</h4>
+                <p className="text-sm text-slate-500 mt-1">
+                  {t('team.resetPasswordMsg', { name: resetPasswordFor.fullName })}
+                </p>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-600 block mb-1">{t('team.resetPasswordLabel')}</label>
+              <input
+                type="password"
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 bg-white"
+                placeholder={t('team.resetPasswordPlaceholder')}
+                autoFocus
+              />
+              <p className="text-[11px] text-amber-600 mt-1">{t('team.resetPasswordHint')}</p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setResetPasswordFor(null); setResetPassword(''); }}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleResetPassword}
+                disabled={resetting || resetPassword.length < 8}
+                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl disabled:opacity-60"
+              >
+                {resetting ? t('team.resetting') : t('team.resetPasswordBtn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Remove confirm dialog */}
       {confirmRemove && (
