@@ -166,9 +166,14 @@ public static class AuthEndpoints
             return Results.Problem("The email address is not valid.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        if (request.Password.Length < 6)
+        if (request.Password.Length < 8)
         {
-            return Results.Problem("Password must be at least 6 characters.", statusCode: StatusCodes.Status400BadRequest);
+            return Results.Problem("Password must be at least 8 characters.", statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        if (!request.Password.Any(char.IsLetter) || !request.Password.Any(char.IsDigit))
+        {
+            return Results.Problem("Password must contain at least one letter and one digit.", statusCode: StatusCodes.Status400BadRequest);
         }
         var existingUser = await dbContext.Users
             .AnyAsync(u => u.Email == normalizedEmail, ct);

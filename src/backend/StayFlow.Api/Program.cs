@@ -30,6 +30,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
+// Kestrel: cap request body at 10 MB to guard against large-payload exhaustion attacks.
+// The logo upload endpoint allows up to 2 MB; all other endpoints are well under this limit.
+builder.Services.Configure<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10 MB
+});
+
 // Options
 builder.Services.Configure<DeploymentOptions>(
     builder.Configuration.GetSection(DeploymentOptions.SectionName));
@@ -269,6 +276,14 @@ if (trustForwardedHeaders)
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+// HTTPS redirect in production — prevents unencrypted transmission of tokens and PII.
+// Disabled in Development/Test so local HTTP development works without a certificate.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("DefaultCorsPolicy");
 app.UseStaticFiles(); // serves wwwroot/ including uploaded logos
 app.UseMiddleware<CorrelationIdMiddleware>();
