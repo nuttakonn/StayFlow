@@ -347,6 +347,26 @@ app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
     }
 }).WithName("ReadinessProbe").WithTags("System");
 
+// Email config status — no credentials exposed, safe to call without auth
+app.MapGet("/healthz/email", (IEmailService emailService, IOptions<EmailOptions> emailOpts) =>
+{
+    var opts = emailOpts.Value;
+    return Results.Ok(new
+    {
+        isConfigured = emailService.IsConfigured,
+        serviceType  = emailService.GetType().Name,
+        smtpHost     = string.IsNullOrWhiteSpace(opts.SmtpHost) ? "(not set)" : opts.SmtpHost,
+        smtpPort     = opts.SmtpPort,
+        useTls       = opts.UseTls,
+        fromAddress  = string.IsNullOrWhiteSpace(opts.FromAddress) ? "(not set)" : opts.FromAddress,
+        usernameSet  = !string.IsNullOrWhiteSpace(opts.Username),
+        passwordSet  = !string.IsNullOrWhiteSpace(opts.Password),
+    });
+})
+.WithName("EmailConfigCheck")
+.WithTags("System")
+.AllowAnonymous();
+
 // Legacy health endpoint kept for backward compatibility
 app.MapGet("/healthz", (IOptions<DeploymentOptions> deploymentOptions, IHostEnvironment env) =>
 {
