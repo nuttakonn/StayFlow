@@ -637,8 +637,11 @@ public static class AuthEndpoints
         StayFlowDbContext dbContext,
         IEmailService emailService,
         Microsoft.Extensions.Configuration.IConfiguration configuration,
+        ILoggerFactory loggerFactory,
         CancellationToken ct)
     {
+        var logger = loggerFactory.CreateLogger("ForgotPassword");
+
         // Always return 200 — do not reveal whether the email exists
         if (string.IsNullOrWhiteSpace(request.Email))
             return Results.Ok(new { message = "If that email is registered, a reset link has been sent." });
@@ -647,20 +650,41 @@ public static class AuthEndpoints
         var user = await dbContext.Users
             .FirstOrDefaultAsync(u => u.Email == normalizedEmail && u.IsActive, ct);
 
-        if (user != null && emailService.IsConfigured)
+        if (user == null)
         {
-            var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-            var resetToken = PasswordResetToken.Create(user.Id, rawToken);
-            dbContext.PasswordResetTokens.Add(resetToken);
-            await dbContext.SaveChangesAsync(ct);
+            // Don't reveal non-existence; log at debug only
+            logger.LogDebug("ForgotPassword: no active user for email {Email}", normalizedEmail);
+            return Results.Ok(new { message = "If that email is registered, a reset link has been sent." });
+        }
 
-            var frontendBase = configuration["AppSettings:FrontendBaseUrl"]?.TrimEnd('/') ?? "";
-            var resetLink = $"{frontendBase}/reset-password?token={rawToken}";
-            var appName = configuration["AppSettings:AppName"] ?? "StayFlow PMS";
+        if (!emailService.IsConfigured)
+        {
+            logger.LogWarning(
+                "ForgotPassword: SMTP is not configured — cannot send reset email to {Email}. " +
+                "Set Email__SmtpHost (and related Email__ vars) in environment variables.",
+                normalizedEmail);
+            return Results.Ok(new { message = "If that email is registered, a reset link has been sent." });
+        }
 
-            var email = EmailTemplates.PasswordResetEmail(user.Email, user.FullName, resetLink, appName);
-            try { await emailService.SendAsync(email, ct); }
-            catch { /* log in production — never surface to client */ }
+        var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        var resetToken = PasswordResetToken.Create(user.Id, rawToken);
+        dbContext.PasswordResetTokens.Add(resetToken);
+        await dbContext.SaveChangesAsync(ct);
+
+        var frontendBase = configuration["AppSettings:FrontendBaseUrl"]?.TrimEnd('/') ?? "";
+        var resetLink = $"{frontendBase}/reset-password?token={rawToken}";
+        var appName = configuration["AppSettings:AppName"] ?? "StayFlow PMS";
+
+        var emailMsg = EmailTemplates.PasswordResetEmail(user.Email, user.FullName, resetLink, appName);
+        try
+        {
+            await emailService.SendAsync(emailMsg, ct);
+            logger.LogInformation("ForgotPassword: reset email sent to {Email}", normalizedEmail);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "ForgotPassword: failed to send reset email to {Email}", normalizedEmail);
+            // Token already saved — user can retry; do not surface exception to client
         }
 
         return Results.Ok(new { message = "If that email is registered, a reset link has been sent." });
